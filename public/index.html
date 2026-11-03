@@ -132,6 +132,9 @@ tr.top1 .rank{color:var(--warn)}
 .tcard{border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--surface)}
 .tcard-h{display:flex;flex-wrap:wrap;gap:12px 16px;align-items:center;padding:14px 16px;background:var(--gold-soft);border-bottom:1px solid var(--line)}
 .tnum{width:42px;height:42px;border-radius:8px;background:var(--green);color:#fff;font-family:var(--display);font-weight:700;font-size:21px;display:grid;place-items:center;flex:none}
+.tnum.wide{font-size:15px;width:auto;min-width:42px;padding-inline:8px}
+.ttag{font-family:var(--mono);font-size:12px;white-space:nowrap;color:var(--green-ink);border:1px solid var(--line);border-radius:4px;padding:1px 6px}
+.pauth .show-md{font-family:var(--mono);font-size:12px;color:var(--green-ink)}
 .tlabel{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:600}
 .tcard-h h3{font-family:var(--display);font-size:18px;color:var(--fg);letter-spacing:0;text-transform:none;margin:0;text-wrap:balance}
 .tmeta{min-width:0;flex:1 1 240px}
@@ -255,7 +258,7 @@ tr.r1 td{background:var(--rowtint)}
     </div>
     <div class="field" style="flex:1 1 200px">
       <label for="loginCode">Code</label>
-      <input type="text" id="loginCode" placeholder="e.g. PASSWD6789" autocapitalize="characters" spellcheck="false" required>
+      <input type="text" id="loginCode" placeholder="e.g. 7KQ4-M2XP" autocapitalize="characters" spellcheck="false" required>
     </div>
     <div class="row" style="flex:none;align-items:center">
       <button type="button" class="btn ghost" id="loginCancel">Cancel</button>
@@ -316,7 +319,7 @@ tr.r1 td{background:var(--rowtint)}
   <div class="panel">
     <div>
       <h2>Ranking</h2>
-      <p class="note">Papers are ranked within their theme. Final score is the average of the evaluators who have scored the paper; a paper is complete when all evaluators have submitted. Updates every 15 seconds.</p>
+      <p class="note">"All themes" ranks every paper together; pick a theme to rank papers within it. Themes 4 and 5 are ranked as one group. Final score is the average of the evaluators who have scored the paper; a paper is complete when all evaluators have submitted. Updates every 15 seconds.</p>
     </div>
     <div class="field" style="flex:none;max-width:420px">
       <label for="rankTheme">Show</label>
@@ -387,6 +390,15 @@ const fmt = n => n == null || !isFinite(n) ? "—" : (Math.round(n*100)/100).toF
 const trim0 = s => s.replace(/\.00$/, "");
 const store = { get(k){try{return localStorage.getItem(k)}catch(e){return null}}, set(k,v){try{localStorage.setItem(k,v)}catch(e){}} };
 const themeName = t => THEMES[t] ? `Theme ${t}: ${THEMES[t]}` : (t ? `Theme ${t}` : "No theme");
+// Ranking groups, following the theme documents: Themes 4 and 5 are one group.
+const GROUPS = {
+  "1":   {badge:"1",   label:"Theme 1",      name:THEMES["1"]},
+  "2":   {badge:"2",   label:"Theme 2",      name:THEMES["2"]},
+  "3":   {badge:"3",   label:"Theme 3",      name:THEMES["3"]},
+  "4-5": {badge:"4–5", label:"Themes 4 & 5", name:"Smart Technologies and Decarbonization; Policy and Governance for Carbon Neutrality"},
+};
+const groupOf = p => String(p.group || (p.theme === "4" || p.theme === "5" ? "4-5" : p.theme || ""));
+const groupName = g => GROUPS[g] ? `${GROUPS[g].label}: ${GROUPS[g].name}` : (g ? `Theme ${g}` : "No theme");
 
 /* ---------- pop-ups (SweetAlert2); fall back to plain browser dialogs if it failed to load ---------- */
 const cssVar = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
@@ -554,17 +566,22 @@ setInterval(() => { if (!document.hidden) load(); }, 15000);
 document.addEventListener("visibilitychange", () => { if (!document.hidden) load(); });
 
 /* ---------- theme selects ---------- */
-const themeKeys = () => Array.from(new Set(Object.keys(THEMES).concat(papers.map(p => String(p.theme || ""))))).filter(Boolean).sort();
+const themeKeys = () => Array.from(new Set(Object.keys(GROUPS).concat(papers.map(groupOf)))).filter(Boolean);
+const inGroup = g => papers.filter(p => groupOf(p) === g);
 function fillThemeSelects(){
-  const opts = themeKeys().map(t => `<option value="${esc(t)}">${esc(themeName(t))} (${papers.filter(p => String(p.theme) === t).length})</option>`).join("");
+  const opts = themeKeys().map(g => `<option value="${esc(g)}">${esc(groupName(g))} (${inGroup(g).length})</option>`).join("");
+  const firsts = {
+    themeSel: `<option value="">All themes (${papers.length})</option>`,
+    rankTheme: `<option value="">All themes: overall ranking (${papers.length})</option><option value="each">All themes: ranked within each theme</option>`,
+  };
   [["themeSel","isnc.themeSel"],["rankTheme","isnc.rankTheme"]].forEach(([id, sk]) => {
     const el = $(id);
-    const cur = el.value || store.get(sk) || "";
-    el.innerHTML = `<option value="">All themes</option>` + opts;
-    if ([...el.options].some(o => o.value === cur)) el.value = cur;
+    const cur = el.options.length ? el.value : (store.get(sk) || "");
+    el.innerHTML = firsts[id] + opts;
+    el.value = [...el.options].some(o => o.value === cur) ? cur : "";
   });
 }
-const inTheme = () => { const t = $("themeSel").value; return t ? papers.filter(p => String(p.theme) === t) : papers; };
+const inTheme = () => { const g = $("themeSel").value; return g ? inGroup(g) : papers; };
 
 /* ---------- score sheet (evaluators) ---------- */
 function buildSheet(){
@@ -698,33 +715,41 @@ function renderRanking(){
   const wrap = $("rankWrap");
   if (!papers.length) { wrap.innerHTML = `<div class="empty">No papers yet.</div>`; return; }
   const sel = $("rankTheme").value;
+  if (sel === "") {
+    wrap.innerHTML = rankCard({badge:"All", label:`All themes · ${papers.length} papers`, name:"Overall ranking", list:papers, showTheme:true});
+  } else {
+    wrap.innerHTML = themeKeys().filter(g => sel === "each" || g === sel).map(g => {
+      const G = GROUPS[g] || {badge:g, label:"Theme " + g, name:""}, list = inGroup(g);
+      return list.length ? rankCard({badge:G.badge, label:`${G.label} · ${list.length} paper${list.length > 1 ? "s" : ""}`, name:G.name, list, showTheme: new Set(list.map(p => p.theme)).size > 1}) : "";
+    }).join("");
+  }
+}
+function rankCard({badge, label, name, list, showTheme}){
   const medal = r => r == null ? `<span class="medal none" aria-label="Not ranked yet">–</span>` : `<span class="medal ${r <= 3 ? "m" + r : ""}" aria-label="Rank ${r}">${r}</span>`;
-  wrap.innerHTML = themeKeys().filter(t => !sel || t === sel).map(t => {
-    const list = papers.filter(p => String(p.theme) === t); if (!list.length) return "";
-    const rows = computeRanking(list), complete = rows.filter(r => r.n === NEV).length, pct = Math.round(complete / list.length * 100);
-    return `<article class="tcard">
-      <header class="tcard-h">
-        <span class="tnum">${esc(t)}</span>
-        <div class="tmeta"><div class="tlabel">Theme ${esc(t)} · ${list.length} paper${list.length > 1 ? "s" : ""}</div><h3>${esc(THEMES[t] || "")}</h3></div>
-        <div class="tprog"><div class="bar" role="img" aria-label="${pct}% complete"><i style="width:${pct}%"></i></div><span>${complete}/${list.length} complete</span></div>
-      </header>
-      <div class="scroll"><table class="rtable"><thead><tr>
-        <th class="rk">Rank</th><th class="hide-sm">Code</th><th>Paper</th>
-        ${Array.from({length:NEV}, (_, i) => `<th class="evc hide-sm" title="Evaluator ${i + 1}">E${i + 1}</th>`).join("")}
-        <th class="num hide-lg">Manuscript<br>/40</th><th class="num hide-lg">Significance<br>/50</th><th class="num hide-lg">Presentation<br>/10</th>
-        <th class="num">Average</th></tr></thead><tbody>` +
-      rows.map(r => `<tr class="${r.rank === 1 ? "r1" : ""}">
-        <td>${medal(r.rank)}</td>
-        <td class="ccell hide-sm">${esc(r.p.code)}</td>
-        <td class="pcell"><div class="pcode show-sm">${esc(r.p.code)}</div><div class="ptitle">${esc(r.p.title)}</div>
-          <div class="pauth">${esc(r.p.authors)}</div>
-          <div class="evline show-sm">${r.ev.map((s, i) => `E${i + 1} ${s ? trim0(fmt(s.total)) : "–"}`).join(" · ")}</div>
-          <div class="pstat"><span class="pill ${r.n === NEV ? "done" : r.n ? "part" : "none"}">${r.n === NEV ? "Complete" : r.n + " of " + NEV + " scored"}</span></div></td>
-        ${r.ev.map((s, i) => `<td class="evc hide-sm"><span class="ev ${s ? "" : "miss"}" title="Evaluator ${i + 1}">${s ? trim0(fmt(s.total)) : "–"}</span></td>`).join("")}
-        <td class="num hide-lg">${fmt(r.s1)}</td><td class="num hide-lg">${fmt(r.s2)}</td><td class="num hide-lg">${fmt(r.s3)}</td>
-        <td class="avg">${r.avg == null ? `<span class="muted">–</span>` : `<b>${fmt(r.avg)}</b><span class="of"> /100</span><div class="bar"><i style="width:${Math.max(0, Math.min(100, r.avg))}%"></i></div>`}</td>
-      </tr>`).join("") + `</tbody></table></div></article>`;
-  }).join("");
+  const rows = computeRanking(list), complete = rows.filter(r => r.n === NEV).length, pct = Math.round(complete / list.length * 100);
+  return `<article class="tcard">
+    <header class="tcard-h">
+      <span class="tnum ${badge.length > 1 ? "wide" : ""}">${esc(badge)}</span>
+      <div class="tmeta"><div class="tlabel">${esc(label)}</div><h3>${esc(name)}</h3></div>
+      <div class="tprog"><div class="bar" role="img" aria-label="${pct}% complete"><i style="width:${pct}%"></i></div><span>${complete}/${list.length} complete</span></div>
+    </header>
+    <div class="scroll"><table class="rtable"><thead><tr>
+      <th class="rk">Rank</th><th class="hide-sm">Code</th>${showTheme ? `<th class="hide-md">Theme</th>` : ""}<th>Paper</th>
+      ${Array.from({length:NEV}, (_, i) => `<th class="evc hide-sm" title="Evaluator ${i + 1}">E${i + 1}</th>`).join("")}
+      <th class="num hide-lg">Manuscript<br>/40</th><th class="num hide-lg">Significance<br>/50</th><th class="num hide-lg">Presentation<br>/10</th>
+      <th class="num">Average</th></tr></thead><tbody>` +
+    rows.map(r => `<tr class="${r.rank === 1 ? "r1" : ""}">
+      <td>${medal(r.rank)}</td>
+      <td class="ccell hide-sm">${esc(r.p.code)}</td>
+      ${showTheme ? `<td class="hide-md"><span class="ttag" title="${esc(themeName(r.p.theme))}">Theme ${esc(r.p.theme)}</span></td>` : ""}
+      <td class="pcell"><div class="pcode show-sm">${esc(r.p.code)}${showTheme ? ` · Theme ${esc(r.p.theme)}` : ""}</div><div class="ptitle">${esc(r.p.title)}</div>
+        <div class="pauth">${esc(r.p.authors)}${showTheme ? `<span class="show-md">Theme ${esc(r.p.theme)}</span>` : ""}</div>
+        <div class="evline show-sm">${r.ev.map((s, i) => `E${i + 1} ${s ? trim0(fmt(s.total)) : "–"}`).join(" · ")}</div>
+        <div class="pstat"><span class="pill ${r.n === NEV ? "done" : r.n ? "part" : "none"}">${r.n === NEV ? "Complete" : r.n + " of " + NEV + " scored"}</span></div></td>
+      ${r.ev.map((s, i) => `<td class="evc hide-sm"><span class="ev ${s ? "" : "miss"}" title="Evaluator ${i + 1}">${s ? trim0(fmt(s.total)) : "–"}</span></td>`).join("")}
+      <td class="num hide-lg">${fmt(r.s1)}</td><td class="num hide-lg">${fmt(r.s2)}</td><td class="num hide-lg">${fmt(r.s3)}</td>
+      <td class="avg">${r.avg == null ? `<span class="muted">–</span>` : `<b>${fmt(r.avg)}</b><span class="of"> /100</span><div class="bar"><i style="width:${Math.max(0, Math.min(100, r.avg))}%"></i></div>`}</td>
+    </tr>`).join("") + `</tbody></table></div></article>`;
 }
 $("rankTheme").addEventListener("change", () => { store.set("isnc.rankTheme", $("rankTheme").value); renderRanking(); });
 
@@ -758,12 +783,21 @@ $("resetBtn").addEventListener("click", async () => {
   });
   if (ok) await adminAction({action:"clear-scores"}, $("resetStatus"), "All scores deleted.");
 });
-
 $("csvBtn").addEventListener("click", () => {
   const q = v => `"${String(v ?? "").replace(/"/g, '""')}"`;
-  const head = ["Theme","Rank in theme","Code","Title","Authors"].concat(Array.from({length:NEV}, (_, i) => "Evaluator " + (i + 1))).concat(["Manuscript (40)","Significance (50)","Presentation (10)","Average (100)","Evaluators submitted"]);
-  const lines = [head.map(q).join(",")].concat(themeKeys().flatMap(t => computeRanking(papers.filter(p => String(p.theme) === t))).map(r =>
-    [themeName(r.p.theme), r.rank ?? "", r.p.code, r.p.title, r.p.authors, ...r.ev.map(s => s ? s.total : ""), r.s1 == null ? "" : r.s1.toFixed(2), r.s2 == null ? "" : r.s2.toFixed(2), r.s3 == null ? "" : r.s3.toFixed(2), r.avg == null ? "" : r.avg.toFixed(2), r.n].map(q).join(",")));
+  const num = v => v == null ? "" : v.toFixed(2);
+  const remark = {}; full.forEach(s => remark[`${s.code}_e${s.ev}`] = s.remarks || "");
+  const overall = {}; computeRanking(papers).forEach(r => overall[r.p.code] = r.rank);
+  const evs = Array.from({length:NEV}, (_, i) => i + 1);
+  const head = ["Theme group","Theme","Rank in theme group","Overall rank","Code","Title","Authors"]
+    .concat(evs.map(n => `Evaluator ${n} total`))
+    .concat(["Manuscript (40)","Significance (50)","Presentation (10)","Average (100)","Evaluators submitted"])
+    .concat(evs.map(n => `Evaluator ${n} remarks`));
+  const rows = themeKeys().flatMap(g => computeRanking(inGroup(g)).map(r => [
+    groupName(g), themeName(r.p.theme), r.rank ?? "", overall[r.p.code] ?? "", r.p.code, r.p.title, r.p.authors,
+    ...r.ev.map(s => s ? s.total : ""), num(r.s1), num(r.s2), num(r.s3), num(r.avg), r.n,
+    ...evs.map(n => remark[`${r.p.code}_e${n}`] || "")]));
+  const lines = [head].concat(rows).map(r => r.map(q).join(","));
   const blob = new Blob(["﻿" + lines.join("\r\n")], {type:"text/csv"});
   const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "isnc2026-ranking.csv";
   document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
