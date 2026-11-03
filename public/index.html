@@ -13,7 +13,7 @@
   --green:#0b5a2a; --green-ink:#08401e; --gold:#f2b705; --gold-soft:#fdf3d1;
   --bg:#f5f7f3; --surface:#ffffff; --fg:#17231b; --muted:#5b6b60; --line:#d9e1d9;
   --ok:#1d7a3a; --warn:#a86a00; --bad:#b3261e; --band-fg:#ffffff;
-  --silver:#c3cad2; --bronze:#b8763e; --bar:#0b5a2a; --rowtint:#fffaea;
+  --panel:#ffffff; --silver:#c3cad2; --bronze:#b8763e; --bar:#0b5a2a; --rowtint:#fffaea;
   --display:"Source Serif 4", Georgia, "Times New Roman", serif;
   --body:"IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
   --mono:"IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
@@ -23,28 +23,53 @@
   --green:#0e4a25; --green-ink:#7fd39a; --gold:#f5c33b; --gold-soft:#3a3115;
   --bg:#0f1511; --surface:#17201a; --fg:#e4ece6; --muted:#9aaba0; --line:#2a372e;
   --ok:#5cc47c; --warn:#e3a93a; --bad:#ff8a80; --band-fg:#ffffff;
-  --silver:#aeb7c0; --bronze:#c98a52; --bar:#5cc47c; --rowtint:#211d10; color-scheme:dark}
+  --panel:#eef2ec; --silver:#aeb7c0; --bronze:#c98a52; --bar:#5cc47c; --rowtint:#211d10; color-scheme:dark}
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 html,body{margin:0}
 body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:15px;line-height:1.5}
 .wrap{max-width:1040px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
-header.band{background:var(--green);color:var(--band-fg);border-bottom:5px solid var(--gold)}
-header.band .wrap{padding-block:18px;display:flex;flex-direction:column;gap:12px}
-.brand{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
-.logo{height:60px;width:60px;object-fit:contain;background:#fff;border-radius:50%;padding:3px;flex:none}
-.inst{font-family:var(--display);font-weight:700;font-size:clamp(16px,2.6vw,20px);line-height:1.2}
-.col{color:var(--gold);font-weight:600;font-size:14px;letter-spacing:.04em}
-.themeBtn{margin-left:auto;font:inherit;font-size:13px;font-weight:600;display:inline-flex;align-items:center;gap:6px;border:1px solid rgba(255,255,255,.45);background:rgba(255,255,255,.08);color:var(--band-fg);border-radius:999px;padding:6px 12px;cursor:pointer}
-.themeBtn:hover{background:rgba(255,255,255,.18)}
-.themeBtn svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
-.eyebrow{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);font-weight:600}
-h1{font-family:var(--display);font-weight:700;font-size:clamp(24px,4vw,34px);line-height:1.15;margin:0;text-wrap:balance}
-.sub{margin:0;opacity:.88}
-.who{display:inline-block;margin-top:8px;background:var(--gold);color:#1d1a0b;font-weight:700;border-radius:4px;padding:2px 10px;font-size:13px}
-nav.tabs{display:flex;gap:4px;flex-wrap:wrap;margin-top:4px}
-nav.tabs button{font:inherit;font-weight:600;border:0;padding:8px 14px;border-radius:6px 6px 0 0;background:transparent;color:var(--band-fg);opacity:.8;cursor:pointer}
-nav.tabs button[aria-selected="true"]{background:var(--bg);color:var(--fg);opacity:1}
+/* ---------- top bar: white logo panel, gold diagonal stripe, green bar with the user menu ---------- */
+.topbar{display:flex;align-items:stretch;justify-content:space-between;min-height:72px;background:var(--green);box-shadow:0 3px 8px rgba(0,0,0,.28);position:relative;z-index:5}
+.tb-stripe{background:var(--gold);clip-path:polygon(0 0,100% 0,calc(100% - var(--slant)) 100%,0 100%);padding-right:22px;min-width:0;flex:0 1 auto;--slant:64px}
+.tb-brand{height:100%;background:var(--panel);clip-path:polygon(0 0,100% 0,calc(100% - var(--slant)) 100%,0 100%);display:flex;align-items:center;gap:10px;padding-block:10px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:calc(var(--slant) + 26px);min-width:0}
+.tb-logo{height:48px;width:48px;object-fit:contain;flex:none}
+.tb-text{min-width:0;color:#10170f}
+.tb-uni{font-family:var(--display);font-weight:700;font-size:15px;letter-spacing:.02em;text-transform:uppercase;line-height:1.2}
+.tb-sys{font-family:var(--display);font-weight:600;font-size:13.5px;line-height:1.25}
+.tb-right{display:flex;align-items:center;gap:6px;padding-left:12px;padding-right:max(16px,env(safe-area-inset-right,0px));color:#fff;flex:none}
+.tb-user{font:inherit;font-weight:700;font-size:16px;background:transparent;border:0;color:#fff;display:inline-flex;align-items:center;gap:6px;cursor:pointer;padding:8px 10px;border-radius:6px;white-space:nowrap}
+.tb-user:hover,.tb-icon:hover{background:rgba(255,255,255,.12)}
+.tb-user svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.tb-icon{width:38px;height:38px;display:grid;place-items:center;border:0;background:transparent;color:#fff;border-radius:50%;cursor:pointer}
+.tb-icon svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
+.usermenu{position:relative}
+.menu{position:absolute;right:0;top:calc(100% + 8px);background:var(--surface);color:var(--fg);border:1px solid var(--line);border-radius:8px;box-shadow:0 10px 28px rgba(0,0,0,.2);min-width:210px;padding:6px;z-index:20}
+.menu-who{font-size:12.5px;color:var(--muted);padding:6px 10px 8px;border-bottom:1px solid var(--line);margin-bottom:4px}
+.menu button{width:100%;text-align:left;font:inherit;background:transparent;border:0;color:var(--fg);padding:8px 10px;border-radius:6px;cursor:pointer}
+.menu button:hover{background:var(--bg)}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+/* ---------- title strip under the bar ---------- */
+.titlebar{background:var(--surface);border-bottom:1px solid var(--line)}
+.titlebar .wrap{padding-top:20px;display:flex;flex-direction:column;gap:6px}
+.eyebrow{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--green-ink);font-weight:600}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(24px,4vw,32px);line-height:1.15;margin:0;text-wrap:balance}
+.sub{margin:0;color:var(--muted)}
+.who{align-self:flex-start;margin-top:4px;background:var(--gold);color:#1d1a0b;font-weight:700;border-radius:4px;padding:2px 10px;font-size:13px}
+nav.tabs{display:flex;gap:4px;flex-wrap:wrap;margin-top:8px}
+nav.tabs button{font:inherit;font-weight:600;border:0;border-bottom:3px solid transparent;padding:10px 14px;background:transparent;color:var(--muted);cursor:pointer}
+nav.tabs button[aria-selected="true"]{color:var(--fg);border-bottom-color:var(--gold)}
+.titlebar .pad{height:16px}
+@media (max-width:640px){
+  .topbar{min-height:60px}
+  .tb-stripe{--slant:34px;padding-right:12px}
+  .tb-brand{gap:6px;padding-right:calc(var(--slant) + 14px)}
+  .tb-logo{height:32px;width:32px}
+  .tb-app{display:none}
+  .tb-uni{font-size:11px}
+  .tb-sys{font-size:11px}
+  .tb-user{font-size:14px;padding:6px}
+}
 button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
 main .wrap{padding-block:24px 48px;display:flex;flex-direction:column;gap:20px}
 .view{display:flex;flex-direction:column;gap:20px}
@@ -134,32 +159,78 @@ tr.r1 td{background:var(--rowtint)}
 </head>
 <body>
 
-<header class="band">
+<!-- Top bar: logos and names on a white panel, gold diagonal stripe, green area with the user menu -->
+<header class="topbar">
+  <div class="tb-stripe">
+    <div class="tb-brand">
+      <img id="logoUni" class="tb-logo" alt="Mariano Marcos State University logo" data-src="logos/mmsu.png" data-fallback="https://www.mmsu.edu.ph/images/mmsu.png" hidden>
+      <img id="logoCol" class="tb-logo" alt="College of Medicine logo" data-src="logos/com.png" data-fallback="https://www.mmsu.edu.ph/images/colleges/COM.png" hidden>
+      <div class="tb-text">
+        <div class="tb-uni">Mariano Marcos State University</div>
+        <div class="tb-sys">College of Medicine<span class="tb-app"> · ISNC 2026 Paper Evaluation</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="tb-right">
+    <button type="button" class="tb-icon" id="themeBtn" aria-label="Switch to dark mode"><svg id="themeIcon" viewBox="0 0 24 24"></svg><span id="themeLbl" class="sr-only">Dark mode</span></button>
+    <button type="button" class="tb-user" id="loginBtn">Log in</button>
+    <div class="usermenu" id="userMenu" hidden>
+      <button type="button" class="tb-user" id="userBtn" aria-haspopup="menu" aria-expanded="false" aria-controls="userDrop"><span id="userName">User</span><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button>
+      <div class="menu" id="userDrop" role="menu" hidden>
+        <div class="menu-who" id="menuWho"></div>
+        <button type="button" role="menuitem" id="logoutBtn">Log out</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- Title strip: event name, who is logged in, and the tabs -->
+<section class="titlebar">
   <div class="wrap">
-    <div class="brand">
-      <img id="logoUni" class="logo" alt="Mariano Marcos State University logo" data-src="logos/mmsu.png" data-fallback="https://www.mmsu.edu.ph/images/mmsu.png" hidden>
-      <img id="logoCol" class="logo" alt="College of Medicine logo" data-src="logos/com.png" data-fallback="https://www.mmsu.edu.ph/images/colleges/COM.png" hidden>
-      <div><div class="inst">Mariano Marcos State University</div><div class="col">College of Medicine</div></div>
-      <button type="button" class="themeBtn" id="themeBtn" aria-label="Switch to dark mode"><svg id="themeIcon" viewBox="0 0 24 24"></svg><span id="themeLbl">Dark mode</span></button>
-    </div>
-    <div>
-      <div class="eyebrow">Research Category · Oral Presentation</div>
-      <h1>ISNC 2026 Paper Evaluation</h1>
-      <p class="sub">2026 International Sustainability Nexus Conference. Evaluators score each paper out of 100, and papers are ranked within their theme.</p>
-      <span class="who" id="whoTag" hidden></span>
-    </div>
+    <div class="eyebrow">Research Category · Oral Presentation</div>
+    <h1>ISNC 2026 Paper Evaluation</h1>
+    <p class="sub">2026 International Sustainability Nexus Conference. Evaluators score each paper out of 100, and papers are ranked within their theme.</p>
+    <span class="who" id="whoTag" hidden></span>
     <nav class="tabs" role="tablist" id="tabs" hidden>
       <button role="tab" id="tab-score" aria-selected="false" data-view="score" hidden>Score papers</button>
       <button role="tab" id="tab-rank" aria-selected="true" data-view="rank">Ranking</button>
       <button role="tab" id="tab-admin" aria-selected="false" data-view="admin" hidden>Organizer</button>
     </nav>
+    <div class="pad" id="tabsPad"></div>
   </div>
-</header>
+</section>
 
 <main>
 <div class="wrap">
 
-<div class="alert" id="badLink" hidden>This link is not valid. Ask the organizer for your evaluator link. You can still see the ranking below.</div>
+<div class="alert" id="badLink" hidden>Your login is no longer valid. The organizer may have changed the codes. Log in again with your new code.</div>
+
+<section class="panel" id="loginPanel" hidden aria-labelledby="loginTitle">
+  <div>
+    <h2 id="loginTitle">Log in</h2>
+    <p class="note">Evaluators and the organizer log in with the code they received. Everyone else can see the ranking without logging in.</p>
+  </div>
+  <form id="loginForm" class="row" autocomplete="off">
+    <div class="field" style="flex:1 1 200px">
+      <label for="loginWho">I am</label>
+      <select id="loginWho">
+        <option value="1">Evaluator 1</option>
+        <option value="2">Evaluator 2</option>
+        <option value="3">Evaluator 3</option>
+        <option value="admin">Organizer</option>
+      </select>
+    </div>
+    <div class="field" style="flex:1 1 200px">
+      <label for="loginCode">Code</label>
+      <input type="text" id="loginCode" placeholder="e.g. 7KQ4-M2XP" autocapitalize="characters" spellcheck="false" required>
+    </div>
+    <div class="row" style="flex:none;align-items:center">
+      <button type="button" class="btn ghost" id="loginCancel">Cancel</button>
+      <button type="submit" class="btn" id="loginGo">Log in</button>
+    </div>
+  </form>
+  <p class="status" id="loginStatus"></p>
+</section>
 <p class="status" id="connStatus">Loading…</p>
 
 <!-- SCORE VIEW (evaluators) -->
@@ -286,11 +357,19 @@ const store = { get(k){try{return localStorage.getItem(k)}catch(e){return null}}
 const themeName = t => THEMES[t] ? `Theme ${t}: ${THEMES[t]}` : (t ? `Theme ${t}` : "No theme");
 
 const Q = new URLSearchParams(location.search);
-const EV = Number(Q.get("e")) || 0, KEY = Q.get("k") || "", ADMIN = Q.get("admin") || "";
+const AUTH_KEY = "isnc.auth";
+let saved = null; try { saved = JSON.parse(store.get(AUTH_KEY) || "null"); } catch (e) {}
+if (Q.get("admin")) saved = {admin: Q.get("admin")};
+else if (Q.get("k")) saved = {e: Number(Q.get("e")) || 0, k: Q.get("k")};
+if (Q.get("admin") || Q.get("k")) {
+  store.set(AUTH_KEY, JSON.stringify(saved));
+  try { history.replaceState(null, "", location.pathname); } catch (e) {}
+}
+const EV = saved && saved.e ? Number(saved.e) : 0, KEY = saved && saved.k ? String(saved.k) : "", ADMIN = saved && saved.admin ? String(saved.admin) : "";
 let role = null, NEV = 3, papers = [], scores = {}, mine = {}, full = [];
 
 /* ---------- logos: local file first, then mmsu.edu.ph, else hidden ---------- */
-document.querySelectorAll("img.logo").forEach(img => {
+document.querySelectorAll("img.tb-logo").forEach(img => {
   img.onload = () => img.hidden = false;
   img.onerror = () => { if (img.dataset.fallback && img.src !== img.dataset.fallback) img.src = img.dataset.fallback; else img.hidden = true; };
   img.src = img.dataset.src;
@@ -322,6 +401,11 @@ show("rank");
 
 function setRole(r){
   if (role === r) return; role = r;
+  const loggedIn = r === "evaluator" || r === "admin";
+  $("loginBtn").hidden = loggedIn; $("userMenu").hidden = !loggedIn;
+  $("userName").textContent = r === "admin" ? "Organizer" : "Evaluator " + EV;
+  $("menuWho").textContent = r === "admin" ? "Logged in as the organizer" : "Logged in as Evaluator " + EV;
+  if (loggedIn) $("tabsPad").hidden = true;
   if (r === "evaluator") {
     $("tabs").hidden = false; $("tab-score").hidden = false;
     $("whoTag").hidden = false; $("whoTag").textContent = "You are scoring as Evaluator " + EV;
@@ -331,8 +415,38 @@ function setRole(r){
     $("whoTag").hidden = false; $("whoTag").textContent = "Organizer view";
   } else if (r === "badlink") {
     $("badLink").hidden = false;
+    store.set(AUTH_KEY, "");
   }
 }
+
+/* ---------- log in / log out ---------- */
+const normCode = c => c.trim().replace(/\s+/g, "").toUpperCase();
+$("loginBtn").addEventListener("click", () => { $("loginPanel").hidden = false; $("badLink").hidden = true; $("loginCode").focus(); });
+$("loginCancel").addEventListener("click", () => { $("loginPanel").hidden = true; $("loginStatus").textContent = ""; });
+// user menu (top right): opens on click, closes on outside click or Escape
+function setMenu(open){ $("userDrop").hidden = !open; $("userBtn").setAttribute("aria-expanded", open); }
+$("userBtn").addEventListener("click", e => { e.stopPropagation(); setMenu($("userDrop").hidden); });
+document.addEventListener("click", e => { if (!$("userMenu").contains(e.target)) setMenu(false); });
+document.addEventListener("keydown", e => { if (e.key === "Escape") setMenu(false); });
+$("logoutBtn").addEventListener("click", () => { store.set(AUTH_KEY, ""); location.replace(location.pathname); });
+$("loginForm").addEventListener("submit", async ev => {
+  ev.preventDefault();
+  const who = $("loginWho").value, code = normCode($("loginCode").value);
+  if (!code) return;
+  const creds = who === "admin" ? {admin: code} : {e: Number(who), k: code};
+  const q = who === "admin" ? `?admin=${encodeURIComponent(code)}` : `?e=${who}&k=${encodeURIComponent(code)}`;
+  $("loginGo").disabled = true; $("loginStatus").className = "status"; $("loginStatus").textContent = "Checking…";
+  try {
+    const r = await fetch("/api/data" + q, {cache:"no-store"}), d = await r.json();
+    const ok = who === "admin" ? d.role === "admin" : d.role === "evaluator";
+    if (!ok) throw new Error(who === "admin" ? "That organizer code is not correct." : `That code does not match Evaluator ${who}. Check the code and the evaluator number.`);
+    store.set(AUTH_KEY, JSON.stringify(creds));
+    location.replace(location.pathname);
+  } catch (e) {
+    $("loginStatus").className = "status bad"; $("loginStatus").textContent = e.message || "Could not log in. Try again.";
+    $("loginGo").disabled = false;
+  }
+});
 
 /* ---------- data ---------- */
 const qs = () => ADMIN ? `?admin=${encodeURIComponent(ADMIN)}` : (EV || KEY) ? `?e=${encodeURIComponent(EV)}&k=${encodeURIComponent(KEY)}` : "";
