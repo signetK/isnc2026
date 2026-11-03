@@ -751,16 +751,14 @@ async function adminAction(body, statusEl, okMsg){
 }
 
 $("resetBtn").addEventListener("click", async () => {
-  let ok;
-  if (hasSwal()) {
-    const r = await Swal.fire({ ...swalBase(), icon: "warning", title: "Delete ALL scores?",
-      html: `Every evaluator's scores for all ${papers.length} papers will be erased and the ranking will be empty.<br><br>Type <b>DELETE</b> to confirm.`,
-      input: "text", inputPlaceholder: "DELETE", showCancelButton: true, confirmButtonText: "Delete all scores", confirmButtonColor: cssVar("--bad"), focusCancel: true,
-      preConfirm: v => { if (String(v).trim().toUpperCase() !== "DELETE") { Swal.showValidationMessage("Type DELETE to confirm"); return false; } return true; } });
-    ok = r.isConfirmed;
-  } else ok = window.confirm("Delete ALL scores? This cannot be undone.");
+  const ok = await ask({
+    title: "Delete ALL scores?",
+    text: `Every evaluator's scores for all ${papers.length} papers will be erased and the ranking will be empty. This cannot be undone.`,
+    icon: "warning", confirm: "Delete all scores", danger: true,
+  });
   if (ok) await adminAction({action:"clear-scores"}, $("resetStatus"), "All scores deleted.");
 });
+
 $("csvBtn").addEventListener("click", () => {
   const q = v => `"${String(v ?? "").replace(/"/g, '""')}"`;
   const head = ["Theme","Rank in theme","Code","Title","Authors"].concat(Array.from({length:NEV}, (_, i) => "Evaluator " + (i + 1))).concat(["Manuscript (40)","Significance (50)","Presentation (10)","Average (100)","Evaluators submitted"]);
