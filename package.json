@@ -1,0 +1,7 @@
+{
+  "name": "isnc2026-evaluation",
+  "private": true,
+  "type": "module",
+  "description": "ISNC 2026 oral presentation scoring and ranking (MMSU College of Medicine)",
+  "engines": { "node": ">=18" }
+}

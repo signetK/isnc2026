@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ISNC 2026 Paper Evaluation</title>
+<link rel="icon" href="logos/mmsu.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: green-and-gold university band on top, tabbed work area below; score sheet mirrors the printed criteria table. */
+:root{
+  --green:#0b5a2a; --green-ink:#08401e; --gold:#f2b705; --gold-soft:#fdf3d1;
+  --bg:#f5f7f3; --surface:#ffffff; --fg:#17231b; --muted:#5b6b60; --line:#d9e1d9;
+  --ok:#1d7a3a; --warn:#a86a00; --bad:#b3261e; --band-fg:#ffffff;
+  --display:"Source Serif 4", Georgia, "Times New Roman", serif;
+  --body:"IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono:"IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+  color-scheme:light;
+}
+:root[data-theme="dark"]{
+  --green:#0e4a25; --green-ink:#7fd39a; --gold:#f5c33b; --gold-soft:#3a3115;
+  --bg:#0f1511; --surface:#17201a; --fg:#e4ece6; --muted:#9aaba0; --line:#2a372e;
+  --ok:#5cc47c; --warn:#e3a93a; --bad:#ff8a80; --band-fg:#ffffff; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:15px;line-height:1.5}
+.wrap{max-width:1040px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header.band{background:var(--green);color:var(--band-fg);border-bottom:5px solid var(--gold)}
+header.band .wrap{padding-block:18px;display:flex;flex-direction:column;gap:12px}
+.brand{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.logo{height:60px;width:60px;object-fit:contain;background:#fff;border-radius:50%;padding:3px;flex:none}
+.inst{font-family:var(--display);font-weight:700;font-size:clamp(16px,2.6vw,20px);line-height:1.2}
+.col{color:var(--gold);font-weight:600;font-size:14px;letter-spacing:.04em}
+.themeBtn{margin-left:auto;font:inherit;font-size:13px;font-weight:600;display:inline-flex;align-items:center;gap:6px;border:1px solid rgba(255,255,255,.45);background:rgba(255,255,255,.08);color:var(--band-fg);border-radius:999px;padding:6px 12px;cursor:pointer}
+.themeBtn:hover{background:rgba(255,255,255,.18)}
+.themeBtn svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
+.eyebrow{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);font-weight:600}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(24px,4vw,34px);line-height:1.15;margin:0;text-wrap:balance}
+.sub{margin:0;opacity:.88}
+.who{display:inline-block;margin-top:8px;background:var(--gold);color:#1d1a0b;font-weight:700;border-radius:4px;padding:2px 10px;font-size:13px}
+nav.tabs{display:flex;gap:4px;flex-wrap:wrap;margin-top:4px}
+nav.tabs button{font:inherit;font-weight:600;border:0;padding:8px 14px;border-radius:6px 6px 0 0;background:transparent;color:var(--band-fg);opacity:.8;cursor:pointer}
+nav.tabs button[aria-selected="true"]{background:var(--bg);color:var(--fg);opacity:1}
+button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+main .wrap{padding-block:24px 48px;display:flex;flex-direction:column;gap:20px}
+.view{display:flex;flex-direction:column;gap:20px}
+h2{font-family:var(--display);font-size:22px;margin:0;text-wrap:balance}
+h3{font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:18px;display:flex;flex-direction:column;gap:14px;min-width:0}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:end}
+.field{display:flex;flex-direction:column;gap:4px;min-width:0;flex:1 1 200px}
+label{font-size:13px;font-weight:600;color:var(--muted)}
+select,input[type=text],input[type=number]{font:inherit;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:8px 10px;width:100%}
+button.btn{font:inherit;font-weight:600;border:1px solid var(--green);background:var(--green);color:#fff;border-radius:6px;padding:9px 16px;cursor:pointer}
+button.btn.ghost{background:transparent;color:var(--fg);border-color:var(--line)}
+button.btn.danger{background:transparent;color:var(--bad);border-color:var(--line)}
+button.btn.small{padding:4px 10px;font-size:13px}
+button.btn:disabled{opacity:.5;cursor:not-allowed}
+.muted{color:var(--muted)}
+.note{font-size:13px;color:var(--muted);margin:0}
+.status{font-size:14px;min-height:1.5em;margin:0}
+.status.ok{color:var(--ok)} .status.bad{color:var(--bad)}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600}
+td.num,th.num{text-align:right;font-family:var(--mono)}
+tr.sec td{background:var(--gold-soft);font-weight:600}
+.crit td:first-child{padding-left:22px}
+.def{display:block;font-size:12.5px;color:var(--muted)}
+.scoreIn{width:84px!important;text-align:right;font-family:var(--mono)}
+.scoreIn.over{border-color:var(--bad);color:var(--bad)}
+.totalbar{display:flex;flex-wrap:wrap;gap:10px 24px;align-items:baseline;justify-content:space-between;border-top:2px solid var(--green);padding-top:12px}
+.big{font-family:var(--mono);font-size:28px}
+.pill{display:inline-block;font-size:12px;font-weight:600;padding:2px 8px;border-radius:999px;border:1px solid var(--line);white-space:nowrap}
+.pill.done{color:var(--ok);border-color:var(--ok)}
+.pill.part{color:var(--warn);border-color:var(--warn)}
+.pill.none{color:var(--muted)}
+.rank{font-family:var(--display);font-weight:700;font-size:20px;color:var(--green-ink)}
+tr.top1 .rank{color:var(--warn)}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{font:inherit;font-size:13px;border:1px solid var(--line);background:var(--bg);color:var(--fg);border-radius:6px;padding:4px 10px;cursor:pointer}
+.chip.done{border-color:var(--ok);color:var(--ok)}
+.chip.cur{background:var(--green);color:#fff;border-color:var(--green)}
+.empty{padding:22px;border:1px dashed var(--line);border-radius:8px;text-align:center;color:var(--muted)}
+.theme-h{display:flex;flex-wrap:wrap;gap:4px 12px;align-items:baseline;margin-bottom:6px}
+.theme-h h3{color:var(--fg);font-size:15px;letter-spacing:0;text-transform:none}
+.theme-h .tag{font-family:var(--mono);font-size:12px;color:var(--green-ink);border:1px solid var(--line);border-radius:4px;padding:1px 6px}
+.alert{border:1px solid var(--bad);color:var(--bad);border-radius:8px;padding:12px 14px}
+@media (max-width:560px){.scoreIn{width:70px!important}.hide-sm{display:none}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<header class="band">
+  <div class="wrap">
+    <div class="brand">
+      <img id="logoUni" class="logo" alt="Mariano Marcos State University logo" data-src="logos/mmsu.png" data-fallback="https://www.mmsu.edu.ph/images/mmsu.png" hidden>
+      <img id="logoCol" class="logo" alt="College of Medicine logo" data-src="logos/com.png" data-fallback="https://www.mmsu.edu.ph/images/colleges/COM.png" hidden>
+      <div><div class="inst">Mariano Marcos State University</div><div class="col">College of Medicine</div></div>
+      <button type="button" class="themeBtn" id="themeBtn" aria-label="Switch to dark mode"><svg id="themeIcon" viewBox="0 0 24 24"></svg><span id="themeLbl">Dark mode</span></button>
+    </div>
+    <div>
+      <div class="eyebrow">Research Category · Oral Presentation</div>
+      <h1>ISNC 2026 Paper Evaluation</h1>
+      <p class="sub">2026 International Sustainability Nexus Conference. Evaluators score each paper out of 100, and papers are ranked within their theme.</p>
+      <span class="who" id="whoTag" hidden></span>
+    </div>
+    <nav class="tabs" role="tablist" id="tabs" hidden>
+      <button role="tab" id="tab-score" aria-selected="false" data-view="score" hidden>Score papers</button>
+      <button role="tab" id="tab-rank" aria-selected="true" data-view="rank">Ranking</button>
+      <button role="tab" id="tab-admin" aria-selected="false" data-view="admin" hidden>Organizer</button>
+    </nav>
+  </div>
+</header>
+
+<main>
+<div class="wrap">
+
+<div class="alert" id="badLink" hidden>This link is not valid. Ask the organizer for your evaluator link. You can still see the ranking below.</div>
+<p class="status" id="connStatus">Loading…</p>
+
+<!-- SCORE VIEW (evaluators) -->
+<section id="view-score" class="view" hidden>
+  <div class="panel">
+    <div class="row">
+      <div class="field" style="flex:2 1 260px">
+        <label for="themeSel">Theme</label>
+        <select id="themeSel"></select>
+      </div>
+      <div class="field" style="flex:3 1 320px">
+        <label for="paperSel">Paper</label>
+        <select id="paperSel"><option value="">Loading papers…</option></select>
+      </div>
+    </div>
+    <div>
+      <h3 style="margin-bottom:6px">Your progress</h3>
+      <div class="chips" id="progress"></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div>
+      <h2 id="sheetTitle">Score sheet</h2>
+      <p class="note" id="sheetMeta">Choose a paper to score.</p>
+    </div>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>Criteria</th><th class="num">Max</th><th class="num">Score</th></tr></thead>
+        <tbody id="critBody"></tbody>
+      </table>
+    </div>
+    <div class="field" style="flex:none">
+      <label for="remarks">Remarks (optional, only the organizer sees these)</label>
+      <input type="text" id="remarks" maxlength="400" placeholder="Comments for the paper">
+    </div>
+    <div class="totalbar">
+      <div><span class="muted">Total</span> <span class="big" id="totalOut">0</span><span class="muted"> / 100</span></div>
+      <div class="row" style="align-items:center">
+        <button class="btn ghost" id="clearBtn" type="button">Clear</button>
+        <button class="btn" id="saveBtn" type="button" disabled>Submit score</button>
+      </div>
+    </div>
+    <p class="status" id="saveStatus"></p>
+  </div>
+</section>
+
+<!-- RANK VIEW (everyone) -->
+<section id="view-rank" class="view" hidden>
+  <div class="panel">
+    <div>
+      <h2>Ranking</h2>
+      <p class="note">Papers are ranked within their theme. Final score is the average of the evaluators who have scored the paper; a paper is complete when all evaluators have submitted. Updates every 15 seconds.</p>
+    </div>
+    <div class="field" style="flex:none;max-width:420px">
+      <label for="rankTheme">Show</label>
+      <select id="rankTheme"></select>
+    </div>
+    <div id="rankWrap" style="display:flex;flex-direction:column;gap:22px"></div>
+  </div>
+</section>
+
+<!-- ADMIN VIEW (organizer) -->
+<section id="view-admin" class="view" hidden>
+  <div class="panel">
+    <div class="row" style="justify-content:space-between;align-items:center">
+      <div>
+        <h2>All submitted scores</h2>
+        <p class="note">Every score sheet with remarks. Only the organizer link shows this.</p>
+      </div>
+      <button class="btn ghost" id="csvBtn" type="button">Download ranking CSV</button>
+    </div>
+    <div class="scroll"><table><thead><tr><th>Paper</th><th class="num">Evaluator</th><th class="num">Total</th><th>Remarks</th><th>Submitted</th><th></th></tr></thead><tbody id="adminBody"></tbody></table></div>
+    <p class="status" id="adminStatus"></p>
+  </div>
+  <div class="panel">
+    <h2>Reset</h2>
+    <p class="note">Deletes every submitted score. Use this after testing, before the real evaluation.</p>
+    <div class="row" style="align-items:center">
+      <button class="btn danger" id="resetBtn" type="button">Delete all scores</button>
+      <button class="btn danger" id="resetConfirm" type="button" hidden>Yes, delete all scores</button>
+    </div>
+    <p class="status" id="resetStatus"></p>
+  </div>
+</section>
+
+</div>
+</main>
+
+<script>
+(() => {
+const CRITERIA = [
+  {sec:"1. Manuscript write-up", max:40, key:"s1", items:[
+    {k:"1a", name:"Coherence of project rationale, objectives, conceptual framework & methodology", def:"Logic and consistency among project rationale, objectives and methods to present a unified whole", max:10},
+    {k:"1b", name:"Clarity and style", max:5},
+    {k:"1c", name:"Attainment of objectives", max:5},
+    {k:"1d", name:"Presentation of results", def:"Use of figures/graphs/diagrams/tables; adequacy of evidence presented", max:10},
+    {k:"1e", name:"Appropriateness and soundness of analysis", max:10},
+  ]},
+  {sec:"2. Significance of research results", max:50, key:"s2", items:[
+    {k:"2a", name:"Contribution to DOST 6Ps & 2Is", max:10},
+    {k:"2b", name:"Contribution to new knowledge or S&T advancement; originality of work", def:"The research produces new knowledge and does not repeat what is already known", max:20},
+    {k:"2c", name:"Relevance to regional development priorities", max:10},
+    {k:"2d", name:"Applicability and significance of outputs to current sectoral, industry, and societal concerns", max:10},
+  ]},
+  {sec:"3. Oral Presentation", max:10, key:"s3", items:[
+    {k:"3a", name:"Clarity, style and creativeness of presentation", max:5},
+    {k:"3b", name:"Appropriateness of replies to inquiries", max:5},
+  ]},
+];
+const THEMES = {
+  "1":"Climate-Smart and Nature-Based Solutions",
+  "2":"Climate-Resilient Health, Education, and Biocultural Systems",
+  "3":"Engineering and Clean Energy Innovations",
+  "4":"Smart Technologies and Decarbonization",
+  "5":"Policy and Governance for Carbon Neutrality",
+};
+const ALL = CRITERIA.flatMap(s => s.items.map(i => ({...i, sec:s.key})));
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const fmt = n => n == null || !isFinite(n) ? "—" : (Math.round(n*100)/100).toFixed(2);
+const trim0 = s => s.replace(/\.00$/, "");
+const store = { get(k){try{return localStorage.getItem(k)}catch(e){return null}}, set(k,v){try{localStorage.setItem(k,v)}catch(e){}} };
+const themeName = t => THEMES[t] ? `Theme ${t}: ${THEMES[t]}` : (t ? `Theme ${t}` : "No theme");
+
+const Q = new URLSearchParams(location.search);
+const EV = Number(Q.get("e")) || 0, KEY = Q.get("k") || "", ADMIN = Q.get("admin") || "";
+let role = null, NEV = 3, papers = [], scores = {}, mine = {}, full = [];
+
+/* ---------- logos: local file first, then mmsu.edu.ph, else hidden ---------- */
+document.querySelectorAll("img.logo").forEach(img => {
+  img.onload = () => img.hidden = false;
+  img.onerror = () => { if (img.dataset.fallback && img.src !== img.dataset.fallback) img.src = img.dataset.fallback; else img.hidden = true; };
+  img.src = img.dataset.src;
+});
+
+/* ---------- light / dark (light by default) ---------- */
+const SUN = '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>';
+const MOON = '<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>';
+function paintTheme(){
+  const dark = document.documentElement.dataset.theme === "dark";
+  $("themeIcon").innerHTML = dark ? SUN : MOON;
+  $("themeLbl").textContent = dark ? "Light mode" : "Dark mode";
+  $("themeBtn").setAttribute("aria-label", dark ? "Switch to light mode" : "Switch to dark mode");
+}
+document.documentElement.dataset.theme = store.get("isnc.theme") === "dark" ? "dark" : "light";
+$("themeBtn").addEventListener("click", () => {
+  const t = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+  document.documentElement.dataset.theme = t; store.set("isnc.theme", t); paintTheme();
+});
+paintTheme();
+
+/* ---------- tabs ---------- */
+function show(view){
+  document.querySelectorAll("nav.tabs button").forEach(b => b.setAttribute("aria-selected", b.dataset.view === view));
+  document.querySelectorAll(".view").forEach(v => v.hidden = v.id !== "view-" + view);
+}
+document.querySelectorAll("nav.tabs button").forEach(b => b.addEventListener("click", () => show(b.dataset.view)));
+show("rank");
+
+function setRole(r){
+  if (role === r) return; role = r;
+  if (r === "evaluator") {
+    $("tabs").hidden = false; $("tab-score").hidden = false;
+    $("whoTag").hidden = false; $("whoTag").textContent = "You are scoring as Evaluator " + EV;
+    buildSheet(); show("score");
+  } else if (r === "admin") {
+    $("tabs").hidden = false; $("tab-admin").hidden = false;
+    $("whoTag").hidden = false; $("whoTag").textContent = "Organizer view";
+  } else if (r === "badlink") {
+    $("badLink").hidden = false;
+  }
+}
+
+/* ---------- data ---------- */
+const qs = () => ADMIN ? `?admin=${encodeURIComponent(ADMIN)}` : (EV || KEY) ? `?e=${encodeURIComponent(EV)}&k=${encodeURIComponent(KEY)}` : "";
+let loading = false, firstLoad = true;
+function applyData(d){
+  NEV = d.evaluators || 3;
+  setRole(d.role);
+  papers = (d.papers || []).slice().sort((a, b) => a.order - b.order);
+  const m = {}; (d.scores || []).forEach(s => m[`${s.code}_e${s.ev}`] = s); scores = m;
+  if (d.mine) mine = d.mine;
+  if (d.full) full = d.full;
+  $("connStatus").className = "status";
+  $("connStatus").textContent = "Updated " + new Date(d.at || Date.now()).toLocaleTimeString();
+  fillThemeSelects();
+  if (role === "evaluator") { renderPaperSelect(); renderProgress(); if (firstLoad) loadSheet(); }
+  if (role === "admin") renderAdmin();
+  renderRanking();
+  firstLoad = false;
+}
+async function load(){
+  if (loading) return; loading = true;
+  try {
+    const r = await fetch("/api/data" + qs(), {cache:"no-store"});
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.error || "Server error");
+    applyData(d);
+  } catch (e) {
+    $("connStatus").className = "status bad";
+    $("connStatus").textContent = "Could not load scores (" + e.message + "). Retrying in 15 seconds.";
+  } finally { loading = false; }
+}
+load();
+setInterval(() => { if (!document.hidden) load(); }, 15000);
+document.addEventListener("visibilitychange", () => { if (!document.hidden) load(); });
+
+/* ---------- theme selects ---------- */
+const themeKeys = () => Array.from(new Set(Object.keys(THEMES).concat(papers.map(p => String(p.theme || ""))))).filter(Boolean).sort();
+function fillThemeSelects(){
+  const opts = themeKeys().map(t => `<option value="${esc(t)}">${esc(themeName(t))} (${papers.filter(p => String(p.theme) === t).length})</option>`).join("");
+  [["themeSel","isnc.themeSel"],["rankTheme","isnc.rankTheme"]].forEach(([id, sk]) => {
+    const el = $(id);
+    const cur = el.value || store.get(sk) || "";
+    el.innerHTML = `<option value="">All themes</option>` + opts;
+    if ([...el.options].some(o => o.value === cur)) el.value = cur;
+  });
+}
+const inTheme = () => { const t = $("themeSel").value; return t ? papers.filter(p => String(p.theme) === t) : papers; };
+
+/* ---------- score sheet (evaluators) ---------- */
+function buildSheet(){
+  const rows = [];
+  CRITERIA.forEach(s => {
+    rows.push(`<tr class="sec"><td>${esc(s.sec)}</td><td class="num">${s.max}</td><td class="num" id="sub-${s.key}">0</td></tr>`);
+    s.items.forEach(i => rows.push(`<tr class="crit"><td>${esc(i.k.slice(1))}. ${esc(i.name)}${i.def ? `<span class="def">${esc(i.def)}</span>` : ""}</td><td class="num">${i.max}</td><td class="num"><input class="scoreIn" type="number" inputmode="decimal" min="0" max="${i.max}" step="0.5" id="c-${i.k}" aria-label="${esc(i.name)} score, max ${i.max}"></td></tr>`));
+  });
+  $("critBody").innerHTML = rows.join("");
+  ALL.forEach(i => $("c-" + i.k).addEventListener("input", recalc));
+}
+$("themeSel").addEventListener("change", () => { store.set("isnc.themeSel", $("themeSel").value); $("paperSel").value = ""; renderPaperSelect(); renderProgress(); loadSheet(); });
+$("paperSel").addEventListener("change", () => { loadSheet(); renderProgress(); });
+$("clearBtn").addEventListener("click", () => { ALL.forEach(i => $("c-" + i.k).value = ""); $("remarks").value = ""; recalc(); });
+$("saveBtn").addEventListener("click", submit);
+
+function readSheet(){
+  const vals = {}; let valid = true, filled = 0;
+  ALL.forEach(i => {
+    const el = $("c-" + i.k), raw = el.value.trim();
+    if (raw === "") { el.classList.remove("over"); return; }
+    const v = Number(raw), bad = !isFinite(v) || v < 0 || v > i.max;
+    el.classList.toggle("over", bad);
+    if (bad) valid = false; else { vals[i.k] = v; filled++; }
+  });
+  return {vals, valid, complete: valid && filled === ALL.length};
+}
+function totals(vals){
+  const t = {s1:0,s2:0,s3:0};
+  ALL.forEach(i => { t[i.sec] += Number(vals[i.k] || 0); });
+  t.total = t.s1 + t.s2 + t.s3; return t;
+}
+let saving = false;
+function recalc(){
+  const {vals, valid, complete} = readSheet(), t = totals(vals);
+  ["s1","s2","s3"].forEach(k => $("sub-" + k).textContent = trim0(fmt(t[k])));
+  $("totalOut").textContent = trim0(fmt(t.total));
+  const ready = !!$("paperSel").value;
+  $("saveBtn").disabled = saving || !(ready && complete);
+  $("saveStatus").className = "status" + (valid ? "" : " bad");
+  $("saveStatus").textContent = !valid ? "A score is above its maximum or below 0. Fix the red boxes." : (ready && !complete ? "Fill in every criterion to submit." : "");
+}
+function loadSheet(){
+  const code = $("paperSel").value, paper = papers.find(p => p.code === code), ex = code ? mine[code] : null;
+  $("sheetTitle").textContent = paper ? `${paper.code} · ${paper.title}` : "Score sheet";
+  $("sheetMeta").textContent = !paper ? "Choose a paper to score." :
+    `${themeName(paper.theme)} · ${paper.authors || "—"}` + (ex ? ` · You already submitted ${fmt(ex.total)}. Submitting again replaces it.` : " · Not yet scored by you.");
+  ALL.forEach(i => { $("c-" + i.k).value = ex && ex.scores && ex.scores[i.k] != null ? ex.scores[i.k] : ""; });
+  $("remarks").value = ex ? (ex.remarks || "") : "";
+  recalc();
+}
+async function submit(){
+  const code = $("paperSel").value, {vals, complete} = readSheet();
+  if (saving || !code || !complete) return;
+  const t = totals(vals);
+  saving = true; recalc();
+  $("saveStatus").className = "status"; $("saveStatus").textContent = "Submitting…";
+  try {
+    const r = await fetch("/api/score", {method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({e:EV, k:KEY, code, scores:vals, remarks:$("remarks").value.trim()})});
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(d.error || "Could not submit.");
+    mine[code] = {scores: d.saved.scores, total: d.saved.total, remarks: d.saved.remarks};
+    scores[`${code}_e${EV}`] = d.saved;
+    const list = inTheme(), idx = list.findIndex(x => x.code === code);
+    const next = list.slice(idx + 1).concat(list.slice(0, idx)).find(x => !mine[x.code] && x.code !== code);
+    saving = false;
+    renderPaperSelect(); renderProgress(); renderRanking(); loadSheet();
+    $("saveStatus").className = "status ok";
+    $("saveStatus").textContent = `Submitted: ${fmt(t.total)} / 100 for ${code}.` + (next ? ` Next unscored: ${next.code}.` : " You have scored every paper in this list.");
+  } catch (e) {
+    saving = false; recalc();
+    $("saveStatus").className = "status bad";
+    $("saveStatus").textContent = e.message + " Your entries are still here; press Submit again.";
+  }
+}
+function renderPaperSelect(){
+  const sel = $("paperSel"), cur = sel.value, list = inTheme();
+  sel.innerHTML = list.length ? `<option value="">Choose a paper…</option>` + list.map(p => `<option value="${esc(p.code)}">${mine[p.code] ? "✓ " : ""}${esc(p.code + " — " + p.title)}</option>`).join("") : `<option value="">No papers in this theme</option>`;
+  if (list.some(p => p.code === cur)) sel.value = cur;
+}
+function renderProgress(){
+  const box = $("progress"), list = inTheme();
+  if (!list.length) { box.innerHTML = `<span class="note">No papers yet.</span>`; return; }
+  const done = list.filter(p => mine[p.code]).length;
+  box.innerHTML = `<span class="pill ${done === list.length ? "done" : done ? "part" : "none"}">${done} of ${list.length} scored${$("themeSel").value ? " in this theme" : ""}</span>` +
+    list.map(p => `<button type="button" class="chip ${mine[p.code] ? "done" : ""} ${$("paperSel").value === p.code ? "cur" : ""}" data-p="${esc(p.code)}" title="${esc(p.title)}">${mine[p.code] ? "✓ " : ""}${esc(p.code)}</button>`).join("");
+  box.querySelectorAll(".chip").forEach(c => c.addEventListener("click", () => { $("paperSel").value = c.dataset.p; loadSheet(); renderProgress(); }));
+}
+
+/* ---------- ranking ---------- */
+function computeRanking(list){
+  const rows = list.map(p => {
+    const ev = Array.from({length:NEV}, (_, i) => scores[`${p.code}_e${i + 1}`] || null), got = ev.filter(Boolean);
+    const avg = k => got.length ? got.reduce((a, s) => a + Number(s[k] || 0), 0) / got.length : null;
+    return {p, ev, n: got.length, avg: avg("total"), s1: avg("s1"), s2: avg("s2"), s3: avg("s3")};
+  });
+  rows.sort((a, b) => (b.avg ?? -1) - (a.avg ?? -1) || a.p.order - b.p.order);
+  let rank = 0, prev = null;
+  rows.forEach((r, i) => { if (r.avg == null) { r.rank = null; return; } if (r.avg !== prev) rank = i + 1; r.rank = rank; prev = r.avg; });
+  return rows;
+}
+function renderRanking(){
+  const wrap = $("rankWrap");
+  if (!papers.length) { wrap.innerHTML = `<div class="empty">No papers yet.</div>`; return; }
+  const sel = $("rankTheme").value;
+  const evHead = Array.from({length:NEV}, (_, i) => `<th class="num">E${i + 1}</th>`).join("");
+  wrap.innerHTML = themeKeys().filter(t => !sel || t === sel).map(t => {
+    const list = papers.filter(p => String(p.theme) === t); if (!list.length) return "";
+    const rows = computeRanking(list), complete = rows.filter(r => r.n === NEV).length;
+    return `<div><div class="theme-h"><h3>${esc(themeName(t))}</h3><span class="tag">${complete}/${list.length} complete</span></div>
+    <div class="scroll"><table><thead><tr><th>Rank</th><th>Paper</th>${evHead}<th class="num hide-sm">Manuscript /40</th><th class="num hide-sm">Significance /50</th><th class="num hide-sm">Presentation /10</th><th class="num">Average</th><th>Status</th></tr></thead><tbody>` +
+    rows.map(r => `<tr class="${r.rank === 1 ? "top1" : ""}">
+      <td><span class="rank">${r.rank ?? "—"}</span></td>
+      <td style="min-width:240px"><strong>${esc(r.p.code)}</strong> ${esc(r.p.title)}<span class="def">${esc(r.p.authors)}</span></td>
+      ${r.ev.map(s => `<td class="num">${s ? fmt(s.total) : "—"}</td>`).join("")}
+      <td class="num hide-sm">${fmt(r.s1)}</td><td class="num hide-sm">${fmt(r.s2)}</td><td class="num hide-sm">${fmt(r.s3)}</td>
+      <td class="num"><strong>${fmt(r.avg)}</strong></td>
+      <td><span class="pill ${r.n === NEV ? "done" : r.n ? "part" : "none"}">${r.n === NEV ? "Complete" : r.n + " of " + NEV}</span></td>
+    </tr>`).join("") + `</tbody></table></div></div>`;
+  }).join("");
+}
+$("rankTheme").addEventListener("change", () => { store.set("isnc.rankTheme", $("rankTheme").value); renderRanking(); });
+
+/* ---------- organizer ---------- */
+function renderAdmin(){
+  const byCode = Object.fromEntries(papers.map(p => [p.code, p]));
+  const rows = full.slice().sort((a, b) => a.code.localeCompare(b.code) || a.ev - b.ev);
+  $("adminBody").innerHTML = rows.length ? rows.map(s => `<tr><td><strong>${esc(s.code)}</strong> <span class="def">${esc(byCode[s.code] ? byCode[s.code].title : "")}</span></td><td class="num">${s.ev}</td><td class="num">${fmt(s.total)}</td><td>${esc(s.remarks || "")}</td><td class="muted">${s.updatedAt ? new Date(s.updatedAt).toLocaleString() : ""}</td><td><button class="btn danger small" type="button" data-del="${esc(s.code + "_e" + s.ev)}">Delete</button></td></tr>`).join("")
+    : `<tr><td colspan="6" class="muted">No scores submitted yet.</td></tr>`;
+  $("adminBody").querySelectorAll("[data-del]").forEach(b => b.addEventListener("click", async () => {
+    if (b.dataset.armed !== "1") { b.dataset.armed = "1"; b.textContent = "Confirm delete"; return; }
+    await adminAction({action:"delete-score", id:b.dataset.del}, $("adminStatus"), "Score deleted.");
+  }));
+}
+async function adminAction(body, statusEl, okMsg){
+  try {
+    const r = await fetch("/api/admin", {method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({admin:ADMIN, ...body})});
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(d.error || "Failed.");
+    statusEl.className = "status ok"; statusEl.textContent = okMsg; load();
+  } catch (e) { statusEl.className = "status bad"; statusEl.textContent = e.message; }
+}
+$("resetBtn").addEventListener("click", () => { $("resetConfirm").hidden = false; });
+$("resetConfirm").addEventListener("click", async () => { $("resetConfirm").hidden = true; await adminAction({action:"clear-scores"}, $("resetStatus"), "All scores deleted."); });
+$("csvBtn").addEventListener("click", () => {
+  const q = v => `"${String(v ?? "").replace(/"/g, '""')}"`;
+  const head = ["Theme","Rank in theme","Code","Title","Authors"].concat(Array.from({length:NEV}, (_, i) => "Evaluator " + (i + 1))).concat(["Manuscript (40)","Significance (50)","Presentation (10)","Average (100)","Evaluators submitted"]);
+  const lines = [head.map(q).join(",")].concat(themeKeys().flatMap(t => computeRanking(papers.filter(p => String(p.theme) === t))).map(r =>
+    [themeName(r.p.theme), r.rank ?? "", r.p.code, r.p.title, r.p.authors, ...r.ev.map(s => s ? s.total : ""), r.s1 == null ? "" : r.s1.toFixed(2), r.s2 == null ? "" : r.s2.toFixed(2), r.s3 == null ? "" : r.s3.toFixed(2), r.avg == null ? "" : r.avg.toFixed(2), r.n].map(q).join(",")));
+  const blob = new Blob(["﻿" + lines.join("\r\n")], {type:"text/csv"});
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "isnc2026-ranking.csv";
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+});
+})();
+</script>
+</body>
+</html>
