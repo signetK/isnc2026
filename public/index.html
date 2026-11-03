@@ -13,6 +13,7 @@
   --green:#0b5a2a; --green-ink:#08401e; --gold:#f2b705; --gold-soft:#fdf3d1;
   --bg:#f5f7f3; --surface:#ffffff; --fg:#17231b; --muted:#5b6b60; --line:#d9e1d9;
   --ok:#1d7a3a; --warn:#a86a00; --bad:#b3261e; --band-fg:#ffffff;
+  --silver:#c3cad2; --bronze:#b8763e; --bar:#0b5a2a; --rowtint:#fffaea;
   --display:"Source Serif 4", Georgia, "Times New Roman", serif;
   --body:"IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
   --mono:"IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
@@ -21,7 +22,8 @@
 :root[data-theme="dark"]{
   --green:#0e4a25; --green-ink:#7fd39a; --gold:#f5c33b; --gold-soft:#3a3115;
   --bg:#0f1511; --surface:#17201a; --fg:#e4ece6; --muted:#9aaba0; --line:#2a372e;
-  --ok:#5cc47c; --warn:#e3a93a; --bad:#ff8a80; --band-fg:#ffffff; color-scheme:dark}
+  --ok:#5cc47c; --warn:#e3a93a; --bad:#ff8a80; --band-fg:#ffffff;
+  --silver:#aeb7c0; --bronze:#c98a52; --bar:#5cc47c; --rowtint:#211d10; color-scheme:dark}
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 html,body{margin:0}
@@ -89,7 +91,44 @@ tr.top1 .rank{color:var(--warn)}
 .theme-h h3{color:var(--fg);font-size:15px;letter-spacing:0;text-transform:none}
 .theme-h .tag{font-family:var(--mono);font-size:12px;color:var(--green-ink);border:1px solid var(--line);border-radius:4px;padding:1px 6px}
 .alert{border:1px solid var(--bad);color:var(--bad);border-radius:8px;padding:12px 14px}
-@media (max-width:560px){.scoreIn{width:70px!important}.hide-sm{display:none}}
+.desc{font-size:13.5px;color:var(--muted);max-width:340px}
+.show-md{display:none}
+.show-sm{display:none}
+.evline{font-family:var(--mono);font-size:12px;color:var(--muted);margin-top:4px}
+/* ranking */
+.tcard{border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--surface)}
+.tcard-h{display:flex;flex-wrap:wrap;gap:12px 16px;align-items:center;padding:14px 16px;background:var(--gold-soft);border-bottom:1px solid var(--line)}
+.tnum{width:42px;height:42px;border-radius:8px;background:var(--green);color:#fff;font-family:var(--display);font-weight:700;font-size:21px;display:grid;place-items:center;flex:none}
+.tlabel{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.tcard-h h3{font-family:var(--display);font-size:18px;color:var(--fg);letter-spacing:0;text-transform:none;margin:0;text-wrap:balance}
+.tmeta{min-width:0;flex:1 1 240px}
+.tprog{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);font-family:var(--mono)}
+.bar{height:6px;width:120px;background:var(--line);border-radius:99px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--bar);border-radius:99px}
+.rtable th{background:var(--surface)}
+.rtable td{vertical-align:middle;padding-block:12px}
+.rtable tbody tr:last-child td{border-bottom:0}
+tr.r1 td{background:var(--rowtint)}
+.medal{display:inline-grid;place-items:center;width:36px;height:36px;border-radius:50%;font-family:var(--display);font-weight:700;font-size:16px;border:1.5px solid var(--line);color:var(--fg);background:var(--surface)}
+.medal.m1{background:var(--gold);border-color:var(--gold);color:#2a2000}
+.medal.m2{background:var(--silver);border-color:var(--silver);color:#1f2328}
+.medal.m3{background:var(--bronze);border-color:var(--bronze);color:#fff}
+.medal.none{color:var(--muted);border-style:dashed;background:transparent}
+.pcell{min-width:220px}
+.rk{width:56px}
+.ptitle{font-weight:600;line-height:1.35}
+.pcode{font-family:var(--mono);font-size:12px;color:var(--green-ink);margin-right:6px}
+.pauth{font-size:12.5px;color:var(--muted);margin-top:3px}
+.pstat{margin-top:6px}
+.evs{display:flex;gap:4px;justify-content:flex-end}
+.ev{font-family:var(--mono);font-size:12px;padding:2px 6px;border-radius:4px;background:var(--bg);border:1px solid var(--line);min-width:48px;text-align:center}
+.ev.miss{color:var(--muted);border-style:dashed}
+.avg{min-width:120px;text-align:right}
+.avg b{font-family:var(--mono);font-size:19px;font-weight:500}
+.avg .of{font-size:12px;color:var(--muted)}
+.avg .bar{width:100%;margin-top:6px}
+@media (max-width:760px){.hide-md{display:none}.show-md{display:block}}
+@media (max-width:560px){.scoreIn{width:70px!important}.hide-sm{display:none}.show-sm{display:block}.avg{min-width:66px}.avg .of{display:none}.avg b{font-size:16px}.rtable th,.rtable td{padding-inline:6px}.pcell{min-width:0}.rk{width:38px}.medal{width:30px;height:30px;font-size:14px}.panel{padding:14px}.tcard-h{padding:12px}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
@@ -149,7 +188,7 @@ tr.top1 .rank{color:var(--warn)}
     </div>
     <div class="scroll">
       <table>
-        <thead><tr><th>Criteria</th><th class="num">Max</th><th class="num">Score</th></tr></thead>
+        <thead><tr><th>Criteria</th><th class="hide-md">Definition / Description</th><th class="num">Rating</th><th class="num">Score</th></tr></thead>
         <tbody id="critBody"></tbody>
       </table>
     </div>
@@ -346,8 +385,8 @@ const inTheme = () => { const t = $("themeSel").value; return t ? papers.filter(
 function buildSheet(){
   const rows = [];
   CRITERIA.forEach(s => {
-    rows.push(`<tr class="sec"><td>${esc(s.sec)}</td><td class="num">${s.max}</td><td class="num" id="sub-${s.key}">0</td></tr>`);
-    s.items.forEach(i => rows.push(`<tr class="crit"><td>${esc(i.k.slice(1))}. ${esc(i.name)}${i.def ? `<span class="def">${esc(i.def)}</span>` : ""}</td><td class="num">${i.max}</td><td class="num"><input class="scoreIn" type="number" inputmode="decimal" min="0" max="${i.max}" step="0.5" id="c-${i.k}" aria-label="${esc(i.name)} score, max ${i.max}"></td></tr>`));
+    rows.push(`<tr class="sec"><td>${esc(s.sec)}</td><td class="hide-md"></td><td class="num">${s.max}</td><td class="num" id="sub-${s.key}">0</td></tr>`);
+    s.items.forEach(i => rows.push(`<tr class="crit"><td>${esc(i.k.slice(1))}. ${esc(i.name)}${i.def ? `<span class="def show-md">${esc(i.def)}</span>` : ""}</td><td class="hide-md desc">${esc(i.def || "")}</td><td class="num">${i.max}</td><td class="num"><input class="scoreIn" type="number" inputmode="decimal" min="0" max="${i.max}" step="0.5" id="c-${i.k}" aria-label="${esc(i.name)} score, max ${i.max}"></td></tr>`));
   });
   $("critBody").innerHTML = rows.join("");
   ALL.forEach(i => $("c-" + i.k).addEventListener("input", recalc));
@@ -446,20 +485,31 @@ function renderRanking(){
   const wrap = $("rankWrap");
   if (!papers.length) { wrap.innerHTML = `<div class="empty">No papers yet.</div>`; return; }
   const sel = $("rankTheme").value;
-  const evHead = Array.from({length:NEV}, (_, i) => `<th class="num">E${i + 1}</th>`).join("");
+  const medal = r => r == null ? `<span class="medal none" aria-label="Not ranked yet">–</span>` : `<span class="medal ${r <= 3 ? "m" + r : ""}" aria-label="Rank ${r}">${r}</span>`;
   wrap.innerHTML = themeKeys().filter(t => !sel || t === sel).map(t => {
     const list = papers.filter(p => String(p.theme) === t); if (!list.length) return "";
-    const rows = computeRanking(list), complete = rows.filter(r => r.n === NEV).length;
-    return `<div><div class="theme-h"><h3>${esc(themeName(t))}</h3><span class="tag">${complete}/${list.length} complete</span></div>
-    <div class="scroll"><table><thead><tr><th>Rank</th><th>Paper</th>${evHead}<th class="num hide-sm">Manuscript /40</th><th class="num hide-sm">Significance /50</th><th class="num hide-sm">Presentation /10</th><th class="num">Average</th><th>Status</th></tr></thead><tbody>` +
-    rows.map(r => `<tr class="${r.rank === 1 ? "top1" : ""}">
-      <td><span class="rank">${r.rank ?? "—"}</span></td>
-      <td style="min-width:240px"><strong>${esc(r.p.code)}</strong> ${esc(r.p.title)}<span class="def">${esc(r.p.authors)}</span></td>
-      ${r.ev.map(s => `<td class="num">${s ? fmt(s.total) : "—"}</td>`).join("")}
-      <td class="num hide-sm">${fmt(r.s1)}</td><td class="num hide-sm">${fmt(r.s2)}</td><td class="num hide-sm">${fmt(r.s3)}</td>
-      <td class="num"><strong>${fmt(r.avg)}</strong></td>
-      <td><span class="pill ${r.n === NEV ? "done" : r.n ? "part" : "none"}">${r.n === NEV ? "Complete" : r.n + " of " + NEV}</span></td>
-    </tr>`).join("") + `</tbody></table></div></div>`;
+    const rows = computeRanking(list), complete = rows.filter(r => r.n === NEV).length, pct = Math.round(complete / list.length * 100);
+    return `<article class="tcard">
+      <header class="tcard-h">
+        <span class="tnum">${esc(t)}</span>
+        <div class="tmeta"><div class="tlabel">Theme ${esc(t)} · ${list.length} paper${list.length > 1 ? "s" : ""}</div><h3>${esc(THEMES[t] || "")}</h3></div>
+        <div class="tprog"><div class="bar" role="img" aria-label="${pct}% complete"><i style="width:${pct}%"></i></div><span>${complete}/${list.length} complete</span></div>
+      </header>
+      <div class="scroll"><table class="rtable"><thead><tr>
+        <th class="rk">Rank</th><th>Paper</th>
+        <th class="num hide-sm">${Array.from({length:NEV}, (_, i) => "E" + (i + 1)).join(" · ")}</th>
+        <th class="num hide-md">Manuscript<br>/40</th><th class="num hide-md">Significance<br>/50</th><th class="num hide-md">Presentation<br>/10</th>
+        <th class="num">Average</th></tr></thead><tbody>` +
+      rows.map(r => `<tr class="${r.rank === 1 ? "r1" : ""}">
+        <td>${medal(r.rank)}</td>
+        <td class="pcell"><div class="ptitle"><span class="pcode">${esc(r.p.code)}</span>${esc(r.p.title)}</div>
+          <div class="pauth">${esc(r.p.authors)}</div>
+          <div class="evline show-sm">${r.ev.map((s, i) => `E${i + 1} ${s ? trim0(fmt(s.total)) : "–"}`).join(" · ")}</div>
+          <div class="pstat"><span class="pill ${r.n === NEV ? "done" : r.n ? "part" : "none"}">${r.n === NEV ? "Complete" : r.n + " of " + NEV + " scored"}</span></div></td>
+        <td class="hide-sm"><div class="evs">${r.ev.map((s, i) => `<span class="ev ${s ? "" : "miss"}" title="Evaluator ${i + 1}">${s ? trim0(fmt(s.total)) : "–"}</span>`).join("")}</div></td>
+        <td class="num hide-md">${fmt(r.s1)}</td><td class="num hide-md">${fmt(r.s2)}</td><td class="num hide-md">${fmt(r.s3)}</td>
+        <td class="avg">${r.avg == null ? `<span class="muted">–</span>` : `<b>${fmt(r.avg)}</b><span class="of"> /100</span><div class="bar"><i style="width:${Math.max(0, Math.min(100, r.avg))}%"></i></div>`}</td>
+      </tr>`).join("") + `</tbody></table></div></article>`;
   }).join("");
 }
 $("rankTheme").addEventListener("change", () => { store.set("isnc.rankTheme", $("rankTheme").value); renderRanking(); });
