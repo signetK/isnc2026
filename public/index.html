@@ -160,10 +160,35 @@ tr.r1 td{background:var(--rowtint)}
 .avg b{font-family:var(--mono);font-size:19px;font-weight:500}
 .avg .of{font-size:12px;color:var(--muted)}
 .avg .bar{width:100%;margin-top:6px}
+@media (max-width:960px){.hide-lg{display:none}}
 @media (max-width:760px){.hide-md{display:none}.show-md{display:block}}
-@media (max-width:560px){.scoreIn{width:70px!important}.hide-sm{display:none}.show-sm{display:block}.avg{min-width:66px}.avg .of{display:none}.avg b{font-size:16px}.rtable th,.rtable td{padding-inline:6px}.pcell{min-width:0}.rk{width:38px}.medal{width:30px;height:30px;font-size:14px}.panel{padding:14px}.tcard-h{padding:12px}}
+@media (max-width:560px){.scoreIn{width:70px!important}.hide-sm{display:none}.show-sm{display:block}.avg{min-width:66px}.avg .of{display:none}.avg b{font-size:16px}.rtable th,.rtable td{padding-inline:6px}.pcell{min-width:0}.rk{width:38px}.ccell{width:auto;font-size:11.5px}.medal{width:30px;height:30px;font-size:14px}.panel{padding:14px}.tcard-h{padding:12px}}
+/* SweetAlert2 pop-ups, matched to the site colours in light and dark mode */
+.swal2-popup{background:var(--surface)!important;color:var(--fg)!important;font-family:var(--body)!important;border-radius:12px!important;border:1px solid var(--line)}
+.swal2-title{font-family:var(--display)!important;color:var(--fg)!important;font-size:22px!important}
+.swal2-html-container{color:var(--muted)!important;font-size:15px!important}
+.swal2-input{background:var(--bg)!important;color:var(--fg)!important;border:1px solid var(--line)!important;font-family:var(--mono)!important;text-align:center}
+.swal2-validation-message{background:var(--bg)!important;color:var(--bad)!important}
+.swal2-styled{font-family:var(--body)!important;font-weight:600!important;border-radius:6px!important}
+.swal2-timer-progress-bar{background:var(--gold)!important}
+.sum{width:100%;border-collapse:collapse;margin-top:8px;font-size:14px;text-align:left}
+.sum td{padding:6px 4px;border-bottom:1px solid var(--line);color:var(--fg)}
+.sum td:last-child{text-align:right;font-family:var(--mono)}
+.sum tr.tot td{font-weight:700;border-bottom:0;font-size:16px}
+.sum-paper{color:var(--fg);font-weight:600;margin:0 0 4px}
+/* ranking: one column per evaluator, centred under its heading */
+.rtable th{font-size:11px;letter-spacing:.04em}
+.rtable th,.rtable td{padding-inline:8px}
+.rtable .pcell{min-width:190px}
+@media (max-width:560px){.rtable .pcell{min-width:0}.rtable .avg{min-width:64px}}
+.rtable .ev{min-width:44px;padding:2px 4px}
+.rtable .avg{min-width:96px}
+.evc{text-align:center!important;width:52px}
+.evc .ev{display:inline-block}
+.ccell{font-family:var(--mono);font-size:12.5px;color:var(--green-ink);white-space:nowrap;width:64px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
+<script src="vendor/sweetalert2.all.min.js"></script>
 </head>
 <body>
 
@@ -200,9 +225,9 @@ tr.r1 td{background:var(--rowtint)}
     <p class="sub">2026 International Sustainability Nexus Conference.</p>
     <span class="who" id="whoTag" hidden></span>
     <nav class="tabs" role="tablist" id="tabs" hidden>
-      <button role="tab" id="tab-score" aria-selected="false" data-view="score" hidden>Score papers</button>
       <button role="tab" id="tab-rank" aria-selected="true" data-view="rank">Ranking</button>
-      <button role="tab" id="tab-admin" aria-selected="false" data-view="admin" hidden>Organizer</button>
+      <button role="tab" id="tab-score" aria-selected="false" data-view="score" hidden>Score papers</button>
+      <button role="tab" id="tab-admin" aria-selected="false" data-view="admin" hidden>Admin</button>
     </nav>
     <div class="pad" id="tabsPad"></div>
   </div>
@@ -319,7 +344,6 @@ tr.r1 td{background:var(--rowtint)}
     <p class="note">Deletes every submitted score. Use this after testing, before the real evaluation.</p>
     <div class="row" style="align-items:center">
       <button class="btn danger" id="resetBtn" type="button">Delete all scores</button>
-      <button class="btn danger" id="resetConfirm" type="button" hidden>Yes, delete all scores</button>
     </div>
     <p class="status" id="resetStatus"></p>
   </div>
@@ -363,6 +387,29 @@ const fmt = n => n == null || !isFinite(n) ? "—" : (Math.round(n*100)/100).toF
 const trim0 = s => s.replace(/\.00$/, "");
 const store = { get(k){try{return localStorage.getItem(k)}catch(e){return null}}, set(k,v){try{localStorage.setItem(k,v)}catch(e){}} };
 const themeName = t => THEMES[t] ? `Theme ${t}: ${THEMES[t]}` : (t ? `Theme ${t}` : "No theme");
+
+/* ---------- pop-ups (SweetAlert2); fall back to plain browser dialogs if it failed to load ---------- */
+const cssVar = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const hasSwal = () => typeof window.Swal !== "undefined";
+const swalBase = () => ({ confirmButtonColor: cssVar("--green"), cancelButtonColor: "#6b7a70", reverseButtons: true });
+function popup(icon, title, text, extra = {}){
+  if (!hasSwal()) { alert(title + (text ? "\n\n" + text : "")); return Promise.resolve({isConfirmed:true}); }
+  return Swal.fire({ ...swalBase(), icon, title, text, ...extra });
+}
+async function ask({title, text, html, icon = "question", confirm = "Yes", cancel = "Cancel", danger = false, extra = {}}){
+  if (!hasSwal()) return window.confirm(title + (text ? "\n\n" + text : ""));
+  const r = await Swal.fire({ ...swalBase(), icon, title, text, html, showCancelButton: true, confirmButtonText: confirm, cancelButtonText: cancel,
+    focusCancel: danger, ...(danger ? {confirmButtonColor: cssVar("--bad")} : {}), ...extra });
+  return r.isConfirmed;
+}
+function toast(icon, title){
+  if (!hasSwal()) return;
+  Swal.fire({ toast: true, position: "top-end", icon, title, timer: 2600, timerProgressBar: true, showConfirmButton: false });
+}
+// a message to show once after the page reloads (e.g. "Welcome, Evaluator 1")
+const FLASH_KEY = "isnc.flash";
+function flashLater(icon, title){ store.set(FLASH_KEY, JSON.stringify({icon, title})); }
+function flashNow(){ let f = null; try { f = JSON.parse(store.get(FLASH_KEY) || "null"); } catch (e) {} if (f) { store.set(FLASH_KEY, ""); setTimeout(() => toast(f.icon, f.title), 300); } }
 
 const Q = new URLSearchParams(location.search);
 const AUTH_KEY = "isnc.auth";
@@ -413,8 +460,8 @@ function setRole(r){
   if (role === r) return; role = r;
   const loggedIn = r === "evaluator" || r === "admin";
   $("loginBtn").hidden = loggedIn; $("userMenu").hidden = !loggedIn;
-  $("userName").textContent = r === "admin" ? "Organizer" : "Evaluator " + EV;
-  $("menuWho").textContent = r === "admin" ? "Logged in as the organizer" : "Logged in as Evaluator " + EV;
+  $("userName").textContent = r === "admin" ? "Admin" : "Evaluator " + EV;
+  $("menuWho").textContent = r === "admin" ? "Logged in as Admin" : "Logged in as Evaluator " + EV;
   if (loggedIn) $("tabsPad").hidden = true;
   if (r === "evaluator") {
     $("tabs").hidden = false; $("tab-score").hidden = false;
@@ -422,10 +469,12 @@ function setRole(r){
     buildSheet(); show("score");
   } else if (r === "admin") {
     $("tabs").hidden = false; $("tab-admin").hidden = false;
-    $("whoTag").hidden = false; $("whoTag").textContent = "Organizer view";
+    $("whoTag").hidden = false; $("whoTag").textContent = "Admin view";
   } else if (r === "badlink") {
     $("badLink").hidden = false;
     store.set(AUTH_KEY, "");
+    popup("warning", "Please log in again", "Your login code is no longer valid. The admin may have changed the codes.", {confirmButtonText: "Log in"})
+      .then(r => { if (r.isConfirmed) $("loginBtn").click(); });
   }
 }
 
@@ -439,7 +488,11 @@ function setMenu(open){ $("userDrop").hidden = !open; $("userBtn").setAttribute(
 $("userBtn").addEventListener("click", e => { e.stopPropagation(); setMenu($("userDrop").hidden); });
 document.addEventListener("click", e => { if (!$("userMenu").contains(e.target)) setMenu(false); });
 document.addEventListener("keydown", e => { if (e.key === "Escape") setMenu(false); });
-$("logoutBtn").addEventListener("click", () => { store.set(AUTH_KEY, ""); location.replace(location.pathname); });
+$("logoutBtn").addEventListener("click", async () => {
+  setMenu(false);
+  if (!(await ask({title: "Log out?", text: `You are logged in as ${$("userName").textContent}. You will need your code to log in again.`, confirm: "Log out"}))) return;
+  store.set(AUTH_KEY, ""); flashLater("success", "Logged out"); location.replace(location.pathname);
+});
 $("loginForm").addEventListener("submit", async ev => {
   ev.preventDefault();
   const who = $("loginWho").value, code = normCode($("loginCode").value);
@@ -450,12 +503,14 @@ $("loginForm").addEventListener("submit", async ev => {
   try {
     const r = await fetch("/api/data" + q, {cache:"no-store"}), d = await r.json();
     const ok = who === "admin" ? d.role === "admin" : d.role === "evaluator";
-    if (!ok) throw new Error(who === "admin" ? "That organizer code is not correct." : `That code does not match Evaluator ${who}. Check the code and the evaluator number.`);
+    if (!ok) throw new Error(who === "admin" ? "That admin code is not correct." : `That code does not match Evaluator ${who}. Check the code and the evaluator number.`);
     store.set(AUTH_KEY, JSON.stringify(creds));
+    flashLater("success", who === "admin" ? "Welcome, Admin" : `Welcome, Evaluator ${who}`);
     location.replace(location.pathname);
   } catch (e) {
     $("loginStatus").className = "status bad"; $("loginStatus").textContent = e.message || "Could not log in. Try again.";
     $("loginGo").disabled = false;
+    popup("error", "Login failed", e.message || "Could not log in. Try again.");
   }
 });
 
@@ -493,6 +548,7 @@ async function load(){
   } finally { loading = false; }
 }
 
+flashNow();
 load();
 setInterval(() => { if (!document.hidden) load(); }, 15000);
 document.addEventListener("visibilitychange", () => { if (!document.hidden) load(); });
@@ -522,7 +578,11 @@ function buildSheet(){
 }
 $("themeSel").addEventListener("change", () => { store.set("isnc.themeSel", $("themeSel").value); $("paperSel").value = ""; renderPaperSelect(); renderProgress(); loadSheet(); });
 $("paperSel").addEventListener("change", () => { loadSheet(); renderProgress(); });
-$("clearBtn").addEventListener("click", () => { ALL.forEach(i => $("c-" + i.k).value = ""); $("remarks").value = ""; recalc(); });
+$("clearBtn").addEventListener("click", async () => {
+  const any = ALL.some(i => $("c-" + i.k).value.trim() !== "") || $("remarks").value.trim();
+  if (any && !(await ask({title: "Clear this sheet?", text: "All numbers and remarks you typed for this paper will be erased. Scores you already submitted are not affected.", confirm: "Clear", danger: true, icon: "warning"}))) return;
+  ALL.forEach(i => $("c-" + i.k).value = ""); $("remarks").value = ""; recalc();
+});
 $("saveBtn").addEventListener("click", submit);
 
 function readSheet(){
@@ -568,7 +628,19 @@ function loadSheet(){
 async function submit(){
   const code = $("paperSel").value, {vals, complete} = readSheet();
   if (saving || !code || !complete) return;
-  const t = totals(vals);
+  const t = totals(vals), paper = papers.find(p => p.code === code), prev = mine[code];
+  const ok = await ask({
+    title: prev ? "Replace your score?" : "Submit this score?",
+    icon: prev ? "warning" : "question",
+    html: `<p class="sum-paper">${esc(code)} · ${esc(paper ? paper.title : "")}</p>
+      <table class="sum">
+        <tr><td>Manuscript write-up</td><td>${trim0(fmt(t.s1))} / 40</td></tr>
+        <tr><td>Significance of results</td><td>${trim0(fmt(t.s2))} / 50</td></tr>
+        <tr><td>Oral presentation</td><td>${trim0(fmt(t.s3))} / 10</td></tr>
+        <tr class="tot"><td>Total</td><td>${trim0(fmt(t.total))} / 100</td></tr>
+      </table>` + (prev ? `<p style="margin:10px 0 0">This replaces your earlier score of <b>${trim0(fmt(prev.total))}</b>.</p>` : ""),
+    confirm: prev ? "Replace score" : "Submit", cancel: "Review again"});
+  if (!ok) return;
   saving = true; recalc();
   $("saveStatus").className = "status"; $("saveStatus").textContent = "Submitting…";
   try {
@@ -583,10 +655,14 @@ async function submit(){
     renderPaperSelect(); renderProgress(); renderRanking(); loadSheet();
     $("saveStatus").className = "status ok";
     $("saveStatus").textContent = `Submitted: ${fmt(t.total)} / 100 for ${code}.` + (next ? ` Next unscored: ${next.code}.` : " You have scored every paper in this list.");
+    const done = await popup("success", "Score submitted", `${code}: ${trim0(fmt(t.total))} / 100.` + (next ? ` Next unscored paper: ${next.code}.` : " You have scored every paper in this list."),
+      next ? {showCancelButton: true, confirmButtonText: `Score ${next.code}`, cancelButtonText: "Stay here"} : {confirmButtonText: "Done"});
+    if (next && done.isConfirmed) { $("paperSel").value = next.code; loadSheet(); renderProgress(); window.scrollTo({top: 0, behavior: "smooth"}); }
   } catch (e) {
     saving = false; recalc();
     $("saveStatus").className = "status bad";
     $("saveStatus").textContent = e.message + " Your entries are still here; press Submit again.";
+    popup("error", "Not submitted", e.message + " Your entries are still on the sheet; press Submit again.");
   }
 }
 
@@ -633,18 +709,19 @@ function renderRanking(){
         <div class="tprog"><div class="bar" role="img" aria-label="${pct}% complete"><i style="width:${pct}%"></i></div><span>${complete}/${list.length} complete</span></div>
       </header>
       <div class="scroll"><table class="rtable"><thead><tr>
-        <th class="rk">Rank</th><th>Paper</th>
-        <th class="num hide-sm">${Array.from({length:NEV}, (_, i) => "E" + (i + 1)).join(" · ")}</th>
-        <th class="num hide-md">Manuscript<br>/40</th><th class="num hide-md">Significance<br>/50</th><th class="num hide-md">Presentation<br>/10</th>
+        <th class="rk">Rank</th><th class="hide-sm">Code</th><th>Paper</th>
+        ${Array.from({length:NEV}, (_, i) => `<th class="evc hide-sm" title="Evaluator ${i + 1}">E${i + 1}</th>`).join("")}
+        <th class="num hide-lg">Manuscript<br>/40</th><th class="num hide-lg">Significance<br>/50</th><th class="num hide-lg">Presentation<br>/10</th>
         <th class="num">Average</th></tr></thead><tbody>` +
       rows.map(r => `<tr class="${r.rank === 1 ? "r1" : ""}">
         <td>${medal(r.rank)}</td>
-        <td class="pcell"><div class="ptitle"><span class="pcode">${esc(r.p.code)}</span>${esc(r.p.title)}</div>
+        <td class="ccell hide-sm">${esc(r.p.code)}</td>
+        <td class="pcell"><div class="pcode show-sm">${esc(r.p.code)}</div><div class="ptitle">${esc(r.p.title)}</div>
           <div class="pauth">${esc(r.p.authors)}</div>
           <div class="evline show-sm">${r.ev.map((s, i) => `E${i + 1} ${s ? trim0(fmt(s.total)) : "–"}`).join(" · ")}</div>
           <div class="pstat"><span class="pill ${r.n === NEV ? "done" : r.n ? "part" : "none"}">${r.n === NEV ? "Complete" : r.n + " of " + NEV + " scored"}</span></div></td>
-        <td class="hide-sm"><div class="evs">${r.ev.map((s, i) => `<span class="ev ${s ? "" : "miss"}" title="Evaluator ${i + 1}">${s ? trim0(fmt(s.total)) : "–"}</span>`).join("")}</div></td>
-        <td class="num hide-md">${fmt(r.s1)}</td><td class="num hide-md">${fmt(r.s2)}</td><td class="num hide-md">${fmt(r.s3)}</td>
+        ${r.ev.map((s, i) => `<td class="evc hide-sm"><span class="ev ${s ? "" : "miss"}" title="Evaluator ${i + 1}">${s ? trim0(fmt(s.total)) : "–"}</span></td>`).join("")}
+        <td class="num hide-lg">${fmt(r.s1)}</td><td class="num hide-lg">${fmt(r.s2)}</td><td class="num hide-lg">${fmt(r.s3)}</td>
         <td class="avg">${r.avg == null ? `<span class="muted">–</span>` : `<b>${fmt(r.avg)}</b><span class="of"> /100</span><div class="bar"><i style="width:${Math.max(0, Math.min(100, r.avg))}%"></i></div>`}</td>
       </tr>`).join("") + `</tbody></table></div></article>`;
   }).join("");
@@ -658,7 +735,8 @@ function renderAdmin(){
   $("adminBody").innerHTML = rows.length ? rows.map(s => `<tr><td><strong>${esc(s.code)}</strong> <span class="def">${esc(byCode[s.code] ? byCode[s.code].title : "")}</span></td><td class="num">${s.ev}</td><td class="num">${fmt(s.total)}</td><td>${esc(s.remarks || "")}</td><td class="muted">${s.updatedAt ? new Date(s.updatedAt).toLocaleString() : ""}</td><td><button class="btn danger small" type="button" data-del="${esc(s.code + "_e" + s.ev)}">Delete</button></td></tr>`).join("")
     : `<tr><td colspan="6" class="muted">No scores submitted yet.</td></tr>`;
   $("adminBody").querySelectorAll("[data-del]").forEach(b => b.addEventListener("click", async () => {
-    if (b.dataset.armed !== "1") { b.dataset.armed = "1"; b.textContent = "Confirm delete"; return; }
+    const [code, ev] = b.dataset.del.split("_e");
+    if (!(await ask({title: "Delete this score?", text: `Evaluator ${ev}'s score for ${code} will be removed from the ranking. This cannot be undone.`, confirm: "Delete", danger: true, icon: "warning"}))) return;
     await adminAction({action:"delete-score", id:b.dataset.del}, $("adminStatus"), "Score deleted.");
   }));
 }
@@ -668,12 +746,21 @@ async function adminAction(body, statusEl, okMsg){
     const r = await fetch("/api/admin", {method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({admin:ADMIN, ...body})});
     const d = await r.json().catch(() => ({}));
     if (!r.ok) throw new Error(d.error || "Failed.");
-    statusEl.className = "status ok"; statusEl.textContent = okMsg; load();
-  } catch (e) { statusEl.className = "status bad"; statusEl.textContent = e.message; }
+    statusEl.className = "status ok"; statusEl.textContent = okMsg; toast("success", okMsg); load();
+  } catch (e) { statusEl.className = "status bad"; statusEl.textContent = e.message; popup("error", "Something went wrong", e.message); }
 }
 
-$("resetBtn").addEventListener("click", () => { $("resetConfirm").hidden = false; });
-$("resetConfirm").addEventListener("click", async () => { $("resetConfirm").hidden = true; await adminAction({action:"clear-scores"}, $("resetStatus"), "All scores deleted."); });
+$("resetBtn").addEventListener("click", async () => {
+  let ok;
+  if (hasSwal()) {
+    const r = await Swal.fire({ ...swalBase(), icon: "warning", title: "Delete ALL scores?",
+      html: `Every evaluator's scores for all ${papers.length} papers will be erased and the ranking will be empty.<br><br>Type <b>DELETE</b> to confirm.`,
+      input: "text", inputPlaceholder: "DELETE", showCancelButton: true, confirmButtonText: "Delete all scores", confirmButtonColor: cssVar("--bad"), focusCancel: true,
+      preConfirm: v => { if (String(v).trim().toUpperCase() !== "DELETE") { Swal.showValidationMessage("Type DELETE to confirm"); return false; } return true; } });
+    ok = r.isConfirmed;
+  } else ok = window.confirm("Delete ALL scores? This cannot be undone.");
+  if (ok) await adminAction({action:"clear-scores"}, $("resetStatus"), "All scores deleted.");
+});
 $("csvBtn").addEventListener("click", () => {
   const q = v => `"${String(v ?? "").replace(/"/g, '""')}"`;
   const head = ["Theme","Rank in theme","Code","Title","Authors"].concat(Array.from({length:NEV}, (_, i) => "Evaluator " + (i + 1))).concat(["Manuscript (40)","Significance (50)","Presentation (10)","Average (100)","Evaluators submitted"]);
@@ -682,6 +769,7 @@ $("csvBtn").addEventListener("click", () => {
   const blob = new Blob(["﻿" + lines.join("\r\n")], {type:"text/csv"});
   const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "isnc2026-ranking.csv";
   document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  toast("success", "Ranking downloaded");
 });
 })();
 </script>
