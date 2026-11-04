@@ -1,10 +1,10 @@
 // POST /api/admin {action, ...} — admin only (logged in as "admin").
 //   Scores:   delete-score {id} · clear-scores
-//   Accounts: accounts · create-accounts · reset-password {username} · edit {username, name, email} · set-active {username, active}
+//   Accounts: accounts (with passwords) · create-accounts · edit {username, name, email} · set-active {username, active}
 import { redis, SCORES_KEY } from '../lib/redis.js';
 import { body } from '../lib/http.js';
 import {
-  currentUser, allAccounts, getAccount, saveAccount, createMissing, newPassword, hashPassword, view, SEATS, SENT, send,
+  currentUser, allAccounts, getAccount, saveAccount, createMissing, upgradePasswords, view, SEATS, SENT, send,
 } from '../lib/accounts.js';
 
 export default async function handler(req, res) {
@@ -18,16 +18,10 @@ export default async function handler(req, res) {
       case 'delete-score': if (!b.id) break; await redis('HDEL', SCORES_KEY, String(b.id)); return send(res, 200, { ok: true });
 
       case 'accounts': {
-        const have = await allAccounts();
-        return send(res, 200, { accounts: SEATS.map(s => have[s.username] ? view(have[s.username]) : { ...s, missing: true }) });
+        const upgraded = await upgradePasswords(), have = await allAccounts();
+        return send(res, 200, { upgraded, accounts: SEATS.map(s => have[s.username] ? view(have[s.username]) : { ...s, missing: true }) });
       }
       case 'create-accounts': return send(res, 200, { created: await createMissing() });
-      case 'reset-password': {
-        const a = await getAccount(b.username); if (!a) return send(res, 404, { error: 'No such account.' });
-        const password = newPassword();
-        a.pass = await hashPassword(password); a.generated = true; a.passChangedAt = null; await saveAccount(a);
-        return send(res, 200, { username: a.username, password });
-      }
       case 'edit': {
         const a = await getAccount(b.username); if (!a) return send(res, 404, { error: 'No such account.' });
         const email = String(b.email || '').trim().toLowerCase();

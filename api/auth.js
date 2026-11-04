@@ -3,7 +3,7 @@
 // POST /api/auth {action:"change-password", current, password}   (evaluators)
 import { body, clientIp } from '../lib/http.js';
 import {
-  checkLogin, startSession, endSession, currentUser, getAccount, saveAccount, passwordMatches, hashPassword,
+  checkLogin, startSession, endSession, currentUser, getAccount, saveAccount, passwordMatches,
   tooManyFails, addFail, clearFails, normUser, send,
 } from '../lib/accounts.js';
 
@@ -26,8 +26,8 @@ export default async function handler(req, res) {
       if (!me || me.role !== 'evaluator') return send(res, 403, { error: 'Log in with your evaluator account first.' });
       const a = await getAccount(me.username), pw = String(b.password || '');
       if (!(await passwordMatches(a, b.current))) return send(res, 400, { error: 'Your current password is not correct.' });
-      if (pw.length < 6) return send(res, 400, { error: 'Use at least 6 characters for the new password.' });
-      a.pass = await hashPassword(pw); a.generated = false; a.passChangedAt = Date.now(); await saveAccount(a);
+      if (pw.trim().length < 4) return send(res, 400, { error: 'Use at least 4 characters for the new password.' });
+      a.password = pw.trim().slice(0, 40); delete a.pass; delete a.generated; a.passChangedAt = Date.now(); await saveAccount(a);
       return send(res, 200, { ok: true });
     }
     send(res, 400, { error: 'Unknown action.' });
