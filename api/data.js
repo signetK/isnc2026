@@ -5,8 +5,7 @@
 import { PAPERS } from '../lib/papers.js';
 import { EVALUATORS } from '../lib/criteria.js';
 import { allScores } from '../lib/redis.js';
-import { currentUser, allAccounts, GROUPS, send } from '../lib/accounts.js';
-import { maskEmail } from '../lib/deliver.js';
+import { currentUser, allAccounts, GROUPS, maskEmail, send } from '../lib/accounts.js';
 
 const groupOf = p => String(p.group || (p.theme === '4' || p.theme === '5' ? '4-5' : p.theme));
 
