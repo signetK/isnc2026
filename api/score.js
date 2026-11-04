@@ -23,13 +23,17 @@ export default async function handler(req, res) {
     clean[c.k] = v; sub[c.sec] += v;
   }
   const r2 = n => Math.round(n * 100) / 100;
-  const rec = {
-    code, ev, scores: clean, s1: r2(sub.s1), s2: r2(sub.s2), s3: r2(sub.s3),
-    total: r2(sub.s1 + sub.s2 + sub.s3), remarks: String(b.remarks || '').slice(0, 400), updatedAt: Date.now(),
-  };
   try {
-    await redis('HSET', SCORES_KEY, `${code}_e${ev}`, JSON.stringify(rec));
-    send(res, 200, { ok: true, saved: rec });
+    // Saving again replaces the evaluator's earlier score for this paper (that's how editing works).
+    // createdAt keeps the first submission time; edits counts how many times it was changed.
+    const id = `${code}_e${ev}`, old = await redis('HGET', SCORES_KEY, id), prev = old ? JSON.parse(old) : null;
+    const rec = {
+      code, ev, scores: clean, s1: r2(sub.s1), s2: r2(sub.s2), s3: r2(sub.s3),
+      total: r2(sub.s1 + sub.s2 + sub.s3), remarks: String(b.remarks || '').slice(0, 400), updatedAt: Date.now(),
+      createdAt: prev ? (prev.createdAt || prev.updatedAt) : Date.now(), edits: prev ? (prev.edits || 0) + 1 : 0,
+    };
+    await redis('HSET', SCORES_KEY, id, JSON.stringify(rec));
+    send(res, 200, { ok: true, saved: rec, edited: Boolean(prev) });
   } catch (e) {
     send(res, 500, { error: e.message });
   }

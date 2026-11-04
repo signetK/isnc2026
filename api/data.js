@@ -19,12 +19,12 @@ export default async function handler(req, res) {
     let mine = null, full = null;
     if (role === 'evaluator') {
       mine = {};
-      all.filter(s => s.ev === ev).forEach(s => mine[s.code] = { scores: s.scores, total: s.total, remarks: s.remarks || '' });
+      all.filter(s => s.ev === ev).forEach(s => mine[s.code] = { scores: s.scores, total: s.total, remarks: s.remarks || '', updatedAt: s.updatedAt });
     }
     if (role === 'admin') full = all;
     send(res, 200, {
       role, ev, evaluators: EVALUATORS,
-      papers: PAPERS.map((p, i) => ({ code: p.code, theme: p.theme, title: p.title, authors: p.authors, order: i })),
+      papers: PAPERS.map((p, i) => ({ code: p.code, group: p.group || p.theme, theme: p.theme, title: p.title, authors: p.authors, order: i })),
       scores, mine, full, at: Date.now(),
     });
   } catch (e) {
