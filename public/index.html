@@ -194,6 +194,12 @@ table.list td{vertical-align:middle}
 @media (max-width:560px){table.list th,table.list td{padding-inline:6px}}
 .editTag{display:inline-block;font-size:12px;font-weight:600;letter-spacing:.04em;color:#1d1a0b;background:var(--gold);border-radius:4px;padding:2px 8px;margin-bottom:6px}
 s.was{color:var(--muted);font-size:.85em;margin-right:4px}
+/* remarks box */
+textarea#remarks{font:inherit;line-height:1.5;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:10px 12px;width:100%;min-height:120px;resize:vertical}
+textarea#remarks:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.remarksHead{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.count{font-family:var(--mono);font-size:12px;color:var(--muted)}
+.count.near{color:var(--warn)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 <script src="vendor/sweetalert2.all.min.js"></script>
@@ -307,8 +313,8 @@ s.was{color:var(--muted);font-size:.85em;margin-right:4px}
       </table>
     </div>
     <div class="field" style="flex:none">
-      <label for="remarks">Remarks (optional, only the organizer sees these)</label>
-      <input type="text" id="remarks" maxlength="400" placeholder="Comments for the paper">
+      <div class="remarksHead"><label for="remarks">Remarks (optional, only the organizer sees these)</label><span class="count" id="remarksCount">0 / 400</span></div>
+      <textarea id="remarks" rows="5" maxlength="400" placeholder="Comments for the paper: strengths, weaknesses, suggestions…"></textarea>
     </div>
     <div class="totalbar">
       <div><span class="muted">Total</span> <span class="big" id="totalOut">0</span><span class="muted"> / 100</span></div>
@@ -337,7 +343,7 @@ s.was{color:var(--muted);font-size:.85em;margin-right:4px}
   <div class="panel">
     <div>
       <h2>Ranking</h2>
-      <p class="note">"All themes" ranks every paper together; pick a theme to rank papers within it. Themes 4 and 5 are ranked as one group. Final score is the average of the evaluators who have scored the paper; a paper is complete when all evaluators have submitted. Updates every 15 seconds.</p>
+      <p class="note">Updates every 15 seconds.</p>
     </div>
     <div class="field" style="flex:none;max-width:420px">
       <label for="rankTheme">Show</label>
@@ -616,9 +622,11 @@ $("paperSel").addEventListener("change", () => { loadSheet(); renderProgress(); 
 $("clearBtn").addEventListener("click", async () => {
   const any = ALL.some(i => $("c-" + i.k).value.trim() !== "") || $("remarks").value.trim();
   if (any && !(await ask({title: "Clear this sheet?", text: "All numbers and remarks you typed for this paper will be erased. Scores you already submitted are not affected.", confirm: "Clear", danger: true, icon: "warning"}))) return;
-  ALL.forEach(i => $("c-" + i.k).value = ""); $("remarks").value = ""; recalc();
+  ALL.forEach(i => $("c-" + i.k).value = ""); $("remarks").value = ""; countRemarks(); recalc();
 });
 $("saveBtn").addEventListener("click", submit);
+function countRemarks(){ const n = $("remarks").value.length; $("remarksCount").textContent = `${n} / 400`; $("remarksCount").classList.toggle("near", n >= 360); }
+$("remarks").addEventListener("input", countRemarks);
 
 function readSheet(){
   const vals = {}; let valid = true, filled = 0;
@@ -658,7 +666,7 @@ function loadSheet(){
     `${themeName(paper.theme)} · ${paper.authors || "—"}` + (ex ? ` · Saved ${when(ex.updatedAt)} with ${trim0(fmt(ex.total))} / 100. Change any box and press Save changes.` : " · Not yet scored by you.");
   $("editTag").hidden = !ex;
   ALL.forEach(i => { $("c-" + i.k).value = ex && ex.scores && ex.scores[i.k] != null ? ex.scores[i.k] : ""; });
-  $("remarks").value = ex ? (ex.remarks || "") : "";
+  $("remarks").value = ex ? (ex.remarks || "") : ""; countRemarks();
   recalc();
 }
 
