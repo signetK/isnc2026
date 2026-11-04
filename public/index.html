@@ -189,6 +189,11 @@ tr.r1 td{background:var(--rowtint)}
 .evc{text-align:center!important;width:52px}
 .evc .ev{display:inline-block}
 .ccell{font-family:var(--mono);font-size:12.5px;color:var(--green-ink);white-space:nowrap;width:64px}
+/* My scores */
+table.list td{vertical-align:middle}
+@media (max-width:560px){table.list th,table.list td{padding-inline:6px}}
+.editTag{display:inline-block;font-size:12px;font-weight:600;letter-spacing:.04em;color:#1d1a0b;background:var(--gold);border-radius:4px;padding:2px 8px;margin-bottom:6px}
+s.was{color:var(--muted);font-size:.85em;margin-right:4px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 <script src="vendor/sweetalert2.all.min.js"></script>
@@ -230,6 +235,7 @@ tr.r1 td{background:var(--rowtint)}
     <nav class="tabs" role="tablist" id="tabs" hidden>
       <button role="tab" id="tab-rank" aria-selected="true" data-view="rank">Ranking</button>
       <button role="tab" id="tab-score" aria-selected="false" data-view="score" hidden>Score papers</button>
+      <button role="tab" id="tab-mine" aria-selected="false" data-view="mine" hidden>My scores</button>
       <button role="tab" id="tab-admin" aria-selected="false" data-view="admin" hidden>Admin</button>
     </nav>
     <div class="pad" id="tabsPad"></div>
@@ -288,8 +294,9 @@ tr.r1 td{background:var(--rowtint)}
     </div>
   </div>
 
-  <div class="panel">
+  <div class="panel" id="sheet">
     <div>
+      <div class="editTag" id="editTag" hidden>Editing your saved score</div>
       <h2 id="sheetTitle">Score sheet</h2>
       <p class="note" id="sheetMeta">Choose a paper to score.</p>
     </div>
@@ -315,11 +322,22 @@ tr.r1 td{background:var(--rowtint)}
 </section>
 
 <!-- RANK VIEW (everyone) -->
+<!-- MY SCORES (evaluators): every paper they scored, with Edit -->
+<section id="view-mine" class="view" hidden>
+  <div class="panel">
+    <div>
+      <h2>My scores</h2>
+      <p class="note">Every paper you have scored. Choose <b>Edit</b> to change a score or remark; the ranking updates right away.</p>
+    </div>
+    <div class="scroll"><table class="list"><thead><tr><th class="hide-sm">Code</th><th>Paper</th><th class="hide-sm">Theme</th><th class="num">Total</th><th class="hide-sm">Last saved</th><th></th></tr></thead><tbody id="mineBody"></tbody></table></div>
+  </div>
+</section>
+
 <section id="view-rank" class="view" hidden>
   <div class="panel">
     <div>
       <h2>Ranking</h2>
-      <p class="note">Updates every 15 seconds.</p>
+      <p class="note">"All themes" ranks every paper together; pick a theme to rank papers within it. Themes 4 and 5 are ranked as one group. Final score is the average of the evaluators who have scored the paper; a paper is complete when all evaluators have submitted. Updates every 15 seconds.</p>
     </div>
     <div class="field" style="flex:none;max-width:420px">
       <label for="rankTheme">Show</label>
@@ -337,7 +355,7 @@ tr.r1 td{background:var(--rowtint)}
         <h2>All submitted scores</h2>
         <p class="note">Every score sheet with remarks. Only the organizer link shows this.</p>
       </div>
-      <button class="btn ghost" id="csvBtn" type="button" color="#0c4b05" >Download ranking CSV</button>
+      <button class="btn ghost" id="csvBtn" type="button">Download ranking CSV</button>
     </div>
     <div class="scroll"><table><thead><tr><th>Paper</th><th class="num">Evaluator</th><th class="num">Total</th><th>Remarks</th><th>Submitted</th><th></th></tr></thead><tbody id="adminBody"></tbody></table></div>
     <p class="status" id="adminStatus"></p>
@@ -358,22 +376,20 @@ tr.r1 td{background:var(--rowtint)}
 <script>
 (() => {
 const CRITERIA = [
-  {sec:"1. Manuscript write-up", max:40, key:"s1", items:[
+  {sec:"1. Research Structure", max:40, key:"s1", items:[
     {k:"1a", name:"Coherence of project rationale, objectives, conceptual framework & methodology", def:"Logic and consistency among project rationale, objectives and methods to present a unified whole", max:10},
-    {k:"1b", name:"Clarity and style", max:5},
-    {k:"1c", name:"Attainment of objectives", max:5},
-    {k:"1d", name:"Presentation of results", def:"Use of figures/graphs/diagrams/tables; adequacy of evidence presented", max:10},
-    {k:"1e", name:"Appropriateness and soundness of analysis", max:10},
+    {k:"1b", name:"Attainment of objectives", max:10},
+    {k:"1c", name:"Presentation of results", def:"Use of figures/graphs/diagrams/tables; adequacy of evidence presented", max:10},
+    {k:"1d", name:"Appropriateness and soundness of analysis", max:10},
   ]},
-  {sec:"2. Significance of research results", max:50, key:"s2", items:[
-    {k:"2a", name:"Contribution to DOST 6Ps & 2Is", max:10},
-    {k:"2b", name:"Contribution to new knowledge or S&T advancement; originality of work", def:"The research produces new knowledge and does not repeat what is already known", max:20},
-    {k:"2c", name:"Relevance to regional development priorities", max:10},
-    {k:"2d", name:"Applicability and significance of outputs to current sectoral, industry, and societal concerns", max:10},
+  {sec:"2. Significance of Research Results", max:30, key:"s2", items:[
+    {k:"2a", name:"Contribution to new knowledge or S&T advancement; originality of work", def:"The research produces new knowledge and does not repeat what is already known", max:10},
+    {k:"2b", name:"Relevance to regional development priorities", max:10},
+    {k:"2c", name:"Applicability and significance of outputs to current sectoral, industry, and societal concerns", max:10},
   ]},
-  {sec:"3. Oral Presentation", max:10, key:"s3", items:[
-    {k:"3a", name:"Clarity, style and creativeness of presentation", max:5},
-    {k:"3b", name:"Appropriateness of replies to inquiries", max:5},
+  {sec:"3. Presentation", max:30, key:"s3", items:[
+    {k:"3a", name:"Clarity, style and creativeness of presentation", max:15},
+    {k:"3b", name:"Appropriateness of replies to inquiries", max:15},
   ]},
 ];
 const THEMES = {
@@ -416,6 +432,8 @@ async function ask({title, text, html, icon = "question", confirm = "Yes", cance
 }
 function toast(icon, title){
   if (!hasSwal()) return;
+  // SweetAlert shows one pop-up at a time: never let a corner message replace an open question or message.
+  if (Swal.isVisible() && !Swal.getPopup().classList.contains("swal2-toast")) return;
   Swal.fire({ toast: true, position: "top-end", icon, title, timer: 2600, timerProgressBar: true, showConfirmButton: false });
 }
 // a message to show once after the page reloads (e.g. "Welcome, Evaluator 1")
@@ -476,7 +494,7 @@ function setRole(r){
   $("menuWho").textContent = r === "admin" ? "Logged in as Admin" : "Logged in as Evaluator " + EV;
   if (loggedIn) $("tabsPad").hidden = true;
   if (r === "evaluator") {
-    $("tabs").hidden = false; $("tab-score").hidden = false;
+    $("tabs").hidden = false; $("tab-score").hidden = false; $("tab-mine").hidden = false;
     $("whoTag").hidden = false; $("whoTag").textContent = "You are scoring as Evaluator " + EV;
     buildSheet(); show("score");
   } else if (r === "admin") {
@@ -541,7 +559,7 @@ function applyData(d){
   $("connStatus").className = "status";
   $("connStatus").textContent = "Updated " + new Date(d.at || Date.now()).toLocaleTimeString();
   fillThemeSelects();
-  if (role === "evaluator") { renderPaperSelect(); renderProgress(); if (firstLoad) loadSheet(); }
+  if (role === "evaluator") { renderPaperSelect(); renderProgress(); renderMine(); if (firstLoad) loadSheet(); }
   if (role === "admin") renderAdmin();
   renderRanking();
   firstLoad = false;
@@ -628,6 +646,7 @@ function recalc(){
   $("totalOut").textContent = trim0(fmt(t.total));
   const ready = !!$("paperSel").value;
   $("saveBtn").disabled = saving || !(ready && complete);
+  $("saveBtn").textContent = ready && mine[$("paperSel").value] ? "Save changes" : "Submit score";
   $("saveStatus").className = "status" + (valid ? "" : " bad");
   $("saveStatus").textContent = !valid ? "A score is above its maximum or below 0. Fix the red boxes." : (ready && !complete ? "Fill in every criterion to submit." : "");
 }
@@ -636,27 +655,34 @@ function loadSheet(){
   const code = $("paperSel").value, paper = papers.find(p => p.code === code), ex = code ? mine[code] : null;
   $("sheetTitle").textContent = paper ? `${paper.code} · ${paper.title}` : "Score sheet";
   $("sheetMeta").textContent = !paper ? "Choose a paper to score." :
-    `${themeName(paper.theme)} · ${paper.authors || "—"}` + (ex ? ` · You already submitted ${fmt(ex.total)}. Submitting again replaces it.` : " · Not yet scored by you.");
+    `${themeName(paper.theme)} · ${paper.authors || "—"}` + (ex ? ` · Saved ${when(ex.updatedAt)} with ${trim0(fmt(ex.total))} / 100. Change any box and press Save changes.` : " · Not yet scored by you.");
+  $("editTag").hidden = !ex;
   ALL.forEach(i => { $("c-" + i.k).value = ex && ex.scores && ex.scores[i.k] != null ? ex.scores[i.k] : ""; });
   $("remarks").value = ex ? (ex.remarks || "") : "";
   recalc();
 }
 
+// The saved value shown crossed out in the "Save your changes?" box, e.g. ~~76~~ 80
+function was(prev, key){
+  if (!prev) return "";
+  const v = key === "total" ? prev.total : ALL.filter(i => i.sec === key).reduce((a, i) => a + Number((prev.scores || {})[i.k] || 0), 0);
+  return `<s class="was">${trim0(fmt(v))}</s> `;
+}
 async function submit(){
   const code = $("paperSel").value, {vals, complete} = readSheet();
   if (saving || !code || !complete) return;
   const t = totals(vals), paper = papers.find(p => p.code === code), prev = mine[code];
   const ok = await ask({
-    title: prev ? "Replace your score?" : "Submit this score?",
-    icon: prev ? "warning" : "question",
+    title: prev ? "Save your changes?" : "Submit this score?",
+    icon: "question",
     html: `<p class="sum-paper">${esc(code)} · ${esc(paper ? paper.title : "")}</p>
       <table class="sum">
-        <tr><td>Manuscript write-up</td><td>${trim0(fmt(t.s1))} / 40</td></tr>
-        <tr><td>Significance of results</td><td>${trim0(fmt(t.s2))} / 50</td></tr>
-        <tr><td>Oral presentation</td><td>${trim0(fmt(t.s3))} / 10</td></tr>
-        <tr class="tot"><td>Total</td><td>${trim0(fmt(t.total))} / 100</td></tr>
-      </table>` + (prev ? `<p style="margin:10px 0 0">This replaces your earlier score of <b>${trim0(fmt(prev.total))}</b>.</p>` : ""),
-    confirm: prev ? "Replace score" : "Submit", cancel: "Review again"});
+        <tr><td>Research Structure</td><td>${was(prev, "s1")}${trim0(fmt(t.s1))} / 40</td></tr>
+        <tr><td>Significance of Research Results</td><td>${was(prev, "s2")}${trim0(fmt(t.s2))} / 30</td></tr>
+        <tr><td>Presentation</td><td>${was(prev, "s3")}${trim0(fmt(t.s3))} / 30</td></tr>
+        <tr class="tot"><td>Total</td><td>${was(prev, "total")}${trim0(fmt(t.total))} / 100</td></tr>
+      </table>` + (prev ? `<p style="margin:10px 0 0">Crossed-out numbers are your saved score; it will be replaced.</p>` : ""),
+    confirm: prev ? "Save changes" : "Submit", cancel: "Review again"});
   if (!ok) return;
   saving = true; recalc();
   $("saveStatus").className = "status"; $("saveStatus").textContent = "Submitting…";
@@ -664,15 +690,15 @@ async function submit(){
     const r = await fetch("/api/score", {method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({e:EV, k:KEY, code, scores:vals, remarks:$("remarks").value.trim()})});
     const d = await r.json().catch(() => ({}));
     if (!r.ok) throw new Error(d.error || "Could not submit.");
-    mine[code] = {scores: d.saved.scores, total: d.saved.total, remarks: d.saved.remarks};
+    mine[code] = {scores: d.saved.scores, total: d.saved.total, remarks: d.saved.remarks, updatedAt: d.saved.updatedAt};
     scores[`${code}_e${EV}`] = d.saved;
     const list = inTheme(), idx = list.findIndex(x => x.code === code);
     const next = list.slice(idx + 1).concat(list.slice(0, idx)).find(x => !mine[x.code] && x.code !== code);
     saving = false;
-    renderPaperSelect(); renderProgress(); renderRanking(); loadSheet();
+    renderPaperSelect(); renderProgress(); renderMine(); renderRanking(); loadSheet();
     $("saveStatus").className = "status ok";
-    $("saveStatus").textContent = `Submitted: ${fmt(t.total)} / 100 for ${code}.` + (next ? ` Next unscored: ${next.code}.` : " You have scored every paper in this list.");
-    const done = await popup("success", "Score submitted", `${code}: ${trim0(fmt(t.total))} / 100.` + (next ? ` Next unscored paper: ${next.code}.` : " You have scored every paper in this list."),
+    $("saveStatus").textContent = `${prev ? "Changes saved" : "Submitted"}: ${fmt(t.total)} / 100 for ${code}.` + (next ? ` Next unscored: ${next.code}.` : " You have scored every paper in this list.");
+    const done = await popup("success", prev ? "Changes saved" : "Score submitted", `${code}: ${prev ? trim0(fmt(prev.total)) + " → " : ""}${trim0(fmt(t.total))} / 100.` + (next ? ` Next unscored paper: ${next.code}.` : " You have scored every paper in this list."),
       next ? {showCancelButton: true, confirmButtonText: `Score ${next.code}`, cancelButtonText: "Stay here"} : {confirmButtonText: "Done"});
     if (next && done.isConfirmed) { $("paperSel").value = next.code; loadSheet(); renderProgress(); window.scrollTo({top: 0, behavior: "smooth"}); }
   } catch (e) {
@@ -681,6 +707,28 @@ async function submit(){
     $("saveStatus").textContent = e.message + " Your entries are still here; press Submit again.";
     popup("error", "Not submitted", e.message + " Your entries are still on the sheet; press Submit again.");
   }
+}
+
+/* ---------- My scores (evaluators) ---------- */
+const when = t => t ? new Date(t).toLocaleString([], {month:"short", day:"numeric", hour:"numeric", minute:"2-digit"}) : "";
+function renderMine(){
+  const rows = papers.filter(p => mine[p.code]);
+  $("mineBody").innerHTML = rows.length ? rows.map(p => `<tr>
+      <td class="ccell hide-sm">${esc(p.code)}</td>
+      <td><div class="pcode show-sm">${esc(p.code)}</div><div class="ptitle">${esc(p.title)}</div>${mine[p.code].remarks ? `<div class="pauth">“${esc(mine[p.code].remarks)}”</div>` : ""}</td>
+      <td class="hide-sm">${esc(GROUPS[groupOf(p)] ? GROUPS[groupOf(p)].label : "Theme " + p.theme)}</td>
+      <td class="num"><b>${fmt(mine[p.code].total)}</b></td>
+      <td class="hide-sm muted">${esc(when(mine[p.code].updatedAt))}</td>
+      <td><button class="btn ghost small" type="button" data-edit="${esc(p.code)}">Edit</button></td></tr>`).join("")
+    : `<tr><td colspan="6" class="muted">You haven't scored any papers yet. Start in the "Score papers" tab.</td></tr>`;
+  $("mineBody").querySelectorAll("[data-edit]").forEach(b => b.addEventListener("click", () => openForEdit(b.dataset.edit)));
+}
+// Opens a saved paper on the score sheet, ready to change
+function openForEdit(code){
+  const p = papers.find(x => x.code === code); if (!p) return;
+  if (!inTheme().some(x => x.code === code)) { $("themeSel").value = ""; store.set("isnc.themeSel", ""); }
+  renderPaperSelect(); $("paperSel").value = code; loadSheet(); renderProgress(); show("score");
+  $("sheet").scrollIntoView({behavior: "smooth", block: "start"});
 }
 
 function renderPaperSelect(){
@@ -736,7 +784,7 @@ function rankCard({badge, label, name, list, showTheme}){
     <div class="scroll"><table class="rtable"><thead><tr>
       <th class="rk">Rank</th><th class="hide-sm">Code</th>${showTheme ? `<th class="hide-md">Theme</th>` : ""}<th>Paper</th>
       ${Array.from({length:NEV}, (_, i) => `<th class="evc hide-sm" title="Evaluator ${i + 1}">E${i + 1}</th>`).join("")}
-      <th class="num hide-lg">Manuscript<br>/40</th><th class="num hide-lg">Significance<br>/50</th><th class="num hide-lg">Presentation<br>/10</th>
+      <th class="num hide-lg">Research<br>Structure /40</th><th class="num hide-lg">Significance<br>/30</th><th class="num hide-lg">Presentation<br>/30</th>
       <th class="num">Average</th></tr></thead><tbody>` +
     rows.map(r => `<tr class="${r.rank === 1 ? "r1" : ""}">
       <td>${medal(r.rank)}</td>
@@ -757,7 +805,7 @@ $("rankTheme").addEventListener("change", () => { store.set("isnc.rankTheme", $(
 function renderAdmin(){
   const byCode = Object.fromEntries(papers.map(p => [p.code, p]));
   const rows = full.slice().sort((a, b) => a.code.localeCompare(b.code) || a.ev - b.ev);
-  $("adminBody").innerHTML = rows.length ? rows.map(s => `<tr><td><strong>${esc(s.code)}</strong> <span class="def">${esc(byCode[s.code] ? byCode[s.code].title : "")}</span></td><td class="num">${s.ev}</td><td class="num">${fmt(s.total)}</td><td>${esc(s.remarks || "")}</td><td class="muted">${s.updatedAt ? new Date(s.updatedAt).toLocaleString() : ""}</td><td><button class="btn danger small" type="button" data-del="${esc(s.code + "_e" + s.ev)}">Delete</button></td></tr>`).join("")
+  $("adminBody").innerHTML = rows.length ? rows.map(s => `<tr><td><strong>${esc(s.code)}</strong> <span class="def">${esc(byCode[s.code] ? byCode[s.code].title : "")}</span></td><td class="num">${s.ev}</td><td class="num">${fmt(s.total)}</td><td>${esc(s.remarks || "")}</td><td class="muted">${s.updatedAt ? new Date(s.updatedAt).toLocaleString() : ""}${s.edits ? `<span class="def">edited ${s.edits}×</span>` : ""}</td><td><button class="btn danger small" type="button" data-del="${esc(s.code + "_e" + s.ev)}">Delete</button></td></tr>`).join("")
     : `<tr><td colspan="6" class="muted">No scores submitted yet.</td></tr>`;
   $("adminBody").querySelectorAll("[data-del]").forEach(b => b.addEventListener("click", async () => {
     const [code, ev] = b.dataset.del.split("_e");
@@ -791,7 +839,7 @@ $("csvBtn").addEventListener("click", () => {
   const evs = Array.from({length:NEV}, (_, i) => i + 1);
   const head = ["Theme group","Theme","Rank in theme group","Overall rank","Code","Title","Authors"]
     .concat(evs.map(n => `Evaluator ${n} total`))
-    .concat(["Manuscript (40)","Significance (50)","Presentation (10)","Average (100)","Evaluators submitted"])
+    .concat(["Research Structure (40)","Significance of Research Results (30)","Presentation (30)","Average (100)","Evaluators submitted"])
     .concat(evs.map(n => `Evaluator ${n} remarks`));
   const rows = themeKeys().flatMap(g => computeRanking(inGroup(g)).map(r => [
     groupName(g), themeName(r.p.theme), r.rank ?? "", overall[r.p.code] ?? "", r.p.code, r.p.title, r.p.authors,
