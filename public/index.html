@@ -87,7 +87,7 @@ h3{font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute
 .row{display:flex;gap:12px;flex-wrap:wrap;align-items:end}
 .field{display:flex;flex-direction:column;gap:4px;min-width:0;flex:1 1 200px}
 label{font-size:13px;font-weight:600;color:var(--muted)}
-select,input[type=text],input[type=number]{font:inherit;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:8px 10px;width:100%}
+select,input[type=text],input[type=number],input[type=password]{font:inherit;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:8px 10px;width:100%}
 button.btn{font:inherit;font-weight:600;border:1px solid var(--green);background:var(--green);color:#fff;border-radius:6px;padding:9px 16px;cursor:pointer}
 button.btn.ghost{background:transparent;color:var(--fg);border-color:var(--line)}
 button.btn.danger{background:transparent;color:var(--bad);border-color:var(--line)}
@@ -194,6 +194,14 @@ table.list td{vertical-align:middle}
 @media (max-width:560px){table.list th,table.list td{padding-inline:6px}}
 .editTag{display:inline-block;font-size:12px;font-weight:600;letter-spacing:.04em;color:#1d1a0b;background:var(--gold);border-radius:4px;padding:2px 8px;margin-bottom:6px}
 s.was{color:var(--muted);font-size:.85em;margin-right:4px}
+/* accounts */
+.uname{font-family:var(--mono);font-weight:600;color:var(--green-ink)}
+td.acts{white-space:nowrap}td.acts .btn{margin:2px 0}
+tr.off td{opacity:.55}
+.pwlist{width:100%;border-collapse:collapse;font-size:14px;margin-top:8px;text-align:left}
+.pwlist td{padding:5px 6px;border-bottom:1px solid var(--line);color:var(--fg)}
+.pwlist td.pw{font-family:var(--mono);font-weight:700;letter-spacing:.04em}
+@media (max-width:560px){td.acts{white-space:normal}}
 /* remarks box */
 textarea#remarks{font:inherit;line-height:1.5;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:10px 12px;width:100%;min-height:120px;resize:vertical}
 textarea#remarks:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
@@ -225,6 +233,7 @@ textarea#remarks:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
       <button type="button" class="tb-user" id="userBtn" aria-haspopup="menu" aria-expanded="false" aria-controls="userDrop"><span id="userName">User</span><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button>
       <div class="menu" id="userDrop" role="menu" hidden>
         <div class="menu-who" id="menuWho"></div>
+        <button type="button" role="menuitem" id="pwBtn" hidden>Change password</button>
         <button type="button" role="menuitem" id="logoutBtn">Log out</button>
       </div>
     </div>
@@ -243,6 +252,7 @@ textarea#remarks:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
       <button role="tab" id="tab-score" aria-selected="false" data-view="score" hidden>Score papers</button>
       <button role="tab" id="tab-mine" aria-selected="false" data-view="mine" hidden>My scores</button>
       <button role="tab" id="tab-admin" aria-selected="false" data-view="admin" hidden>Admin</button>
+      <button role="tab" id="tab-accounts" aria-selected="false" data-view="accounts" hidden>Accounts</button>
     </nav>
     <div class="pad" id="tabsPad"></div>
   </div>
@@ -251,33 +261,25 @@ textarea#remarks:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
 <main>
 <div class="wrap">
 
-<div class="alert" id="badLink" hidden>Your login is no longer valid. Log in again with your new code.</div>
-
 <section class="panel" id="loginPanel" hidden aria-labelledby="loginTitle">
   <div>
     <h2 id="loginTitle">Log in</h2>
-    <p class="note">Evaluators and the organizer log in with the code they received.</p>
+    <p class="note">Evaluators: use the username and password the organizer gave you (username looks like <b>t2-e1</b>: Theme 2, Evaluator 1). Admin: username <b>admin</b>.</p>
   </div>
-  <form id="loginForm" class="row" autocomplete="off">
-    <div class="field" style="flex:1 1 200px">
-      <label for="loginWho">User</label>
-      <select id="loginWho">
-        <option value="1">Evaluator 1</option>
-        <option value="2">Evaluator 2</option>
-        <option value="3">Evaluator 3</option>
-        <option value="admin">Admin</option>
-      </select>
+  <form id="loginForm" class="row">
+    <div class="field" style="flex:1 1 180px">
+      <label for="loginUser">Username</label>
+      <input type="text" id="loginUser" autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="e.g. t2-e1" required>
     </div>
     <div class="field" style="flex:1 1 200px">
-      <label for="loginCode">Code</label>
-      <input type="text" id="loginCode" placeholder="e.g. 7KQ4-M2XP" autocapitalize="characters" spellcheck="false" required>
+      <label for="loginPass">Password</label>
+      <input type="password" id="loginPass" autocomplete="current-password" required>
     </div>
     <div class="row" style="flex:none;align-items:center">
       <button type="button" class="btn ghost" id="loginCancel">Cancel</button>
       <button type="submit" class="btn" id="loginGo">Log in</button>
     </div>
   </form>
-  <p class="status" id="loginStatus"></p>
 </section>
 <p class="status" id="connStatus">Loading…</p>
 
@@ -331,10 +333,17 @@ textarea#remarks:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
 <!-- MY SCORES (evaluators): every paper they scored, with Edit -->
 <section id="view-mine" class="view" hidden>
   <div class="panel">
-    <div>
-      <h2>My scores</h2>
-      <p class="note">Every paper you have scored. Choose <b>Edit</b> to change a score or remark; the ranking updates right away.</p>
+    <div class="row" style="justify-content:space-between;align-items:center">
+      <div>
+        <h2>My scores</h2>
+        <p class="note">Every paper you have scored. Choose <b>Edit</b> to change a score or remark; the ranking updates right away.</p>
+      </div>
+      <div class="row" style="flex:none">
+        <button class="btn ghost" id="myXlsBtn" type="button">Download my Excel file</button>
+        <button class="btn ghost" id="myMailBtn" type="button">Email me my Excel file</button>
+      </div>
     </div>
+    <p class="note" id="mailNote"></p>
     <div class="scroll"><table class="list"><thead><tr><th class="hide-sm">Code</th><th>Paper</th><th class="hide-sm">Theme</th><th class="num">Total</th><th class="hide-sm">Last saved</th><th></th></tr></thead><tbody id="mineBody"></tbody></table></div>
   </div>
 </section>
@@ -354,6 +363,20 @@ textarea#remarks:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
 </section>
 
 <!-- ADMIN VIEW (organizer) -->
+<!-- ACCOUNTS (admin): the 12 evaluator accounts -->
+<section id="view-accounts" class="view" hidden>
+  <div class="panel">
+    <div class="row" style="justify-content:space-between;align-items:center">
+      <div>
+        <h2>Evaluator accounts</h2>
+        <p class="note">One account per panel seat: 3 evaluators for each of the 4 theme groups. Give each judge their username and password privately. Each judge can only score their own theme group.</p>
+      </div>
+      <button class="btn" id="createAccBtn" type="button" hidden>Create the 12 accounts</button>
+    </div>
+    <div class="scroll"><table class="list"><thead><tr><th>Username</th><th>Seat</th><th>Judge's name and email</th><th class="num hide-sm">Scored</th><th class="hide-sm">Last login</th><th></th></tr></thead><tbody id="accBody"></tbody></table></div>
+  </div>
+</section>
+
 <section id="view-admin" class="view" hidden>
   <div class="panel">
     <div class="row" style="justify-content:space-between;align-items:center">
@@ -361,7 +384,7 @@ textarea#remarks:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
         <h2>All submitted scores</h2>
         <p class="note">Every score sheet with remarks. Only the organizer link shows this.</p>
       </div>
-      <button class="btn ghost" id="csvBtn" type="button">Download ranking CSV</button>
+      <button class="btn ghost" id="csvBtn" type="button">Download Excel file</button>
     </div>
     <div class="scroll"><table><thead><tr><th>Paper</th><th class="num">Evaluator</th><th class="num">Total</th><th>Remarks</th><th>Submitted</th><th></th></tr></thead><tbody id="adminBody"></tbody></table></div>
     <p class="status" id="adminStatus"></p>
@@ -447,17 +470,8 @@ const FLASH_KEY = "isnc.flash";
 function flashLater(icon, title){ store.set(FLASH_KEY, JSON.stringify({icon, title})); }
 function flashNow(){ let f = null; try { f = JSON.parse(store.get(FLASH_KEY) || "null"); } catch (e) {} if (f) { store.set(FLASH_KEY, ""); setTimeout(() => toast(f.icon, f.title), 300); } }
 
-const Q = new URLSearchParams(location.search);
-const AUTH_KEY = "isnc.auth";
-let saved = null; try { saved = JSON.parse(store.get(AUTH_KEY) || "null"); } catch (e) {}
-if (Q.get("admin")) saved = {admin: Q.get("admin")};
-else if (Q.get("k")) saved = {e: Number(Q.get("e")) || 0, k: Q.get("k")};
-if (Q.get("admin") || Q.get("k")) {
-  store.set(AUTH_KEY, JSON.stringify(saved));
-  try { history.replaceState(null, "", location.pathname); } catch (e) {}
-}
-const EV = saved && saved.e ? Number(saved.e) : 0, KEY = saved && saved.k ? String(saved.k) : "", ADMIN = saved && saved.admin ? String(saved.admin) : "";
-let role = null, NEV = 3, papers = [], scores = {}, mine = {}, full = [];
+// Who is logged in comes from the server (a secure login cookie), not from the address bar.
+let role = null, me = null, EV = 0, NEV = 3, papers = [], scores = {}, mine = {}, full = [], panel = {};
 
 /* ---------- logos: local file first, then mmsu.edu.ph, else hidden ---------- */
 document.querySelectorAll("img.tb-logo").forEach(img => {
@@ -488,6 +502,7 @@ paintTheme();
 function show(view){
   document.querySelectorAll("nav.tabs button").forEach(b => b.setAttribute("aria-selected", b.dataset.view === view));
   document.querySelectorAll(".view").forEach(v => v.hidden = v.id !== "view-" + view);
+  if (view === "accounts") loadAccounts();
 }
 document.querySelectorAll("nav.tabs button").forEach(b => b.addEventListener("click", () => show(b.dataset.view)));
 show("rank");
@@ -495,29 +510,25 @@ show("rank");
 function setRole(r){
   if (role === r) return; role = r;
   const loggedIn = r === "evaluator" || r === "admin";
-  $("loginBtn").hidden = loggedIn; $("userMenu").hidden = !loggedIn;
-  $("userName").textContent = r === "admin" ? "Admin" : "Evaluator " + EV;
-  $("menuWho").textContent = r === "admin" ? "Logged in as Admin" : "Logged in as Evaluator " + EV;
+  $("loginBtn").hidden = loggedIn; $("userMenu").hidden = !loggedIn; $("loginPanel").hidden = true;
   if (loggedIn) $("tabsPad").hidden = true;
   if (r === "evaluator") {
+    $("userName").textContent = me.name ? me.name.split(" ").slice(0, 3).join(" ") : me.username;
+    $("menuWho").textContent = `${me.username} · ${me.label}`;
+    $("pwBtn").hidden = false;
     $("tabs").hidden = false; $("tab-score").hidden = false; $("tab-mine").hidden = false;
-    $("whoTag").hidden = false; $("whoTag").textContent = "You are scoring as Evaluator " + EV;
+    $("whoTag").hidden = false; $("whoTag").textContent = `${me.label}${me.name ? " · " + me.name : ""}`;
     buildSheet(); show("score");
   } else if (r === "admin") {
-    $("tabs").hidden = false; $("tab-admin").hidden = false;
+    $("userName").textContent = "Admin"; $("menuWho").textContent = "Logged in as admin";
+    $("tabs").hidden = false; $("tab-admin").hidden = false; $("tab-accounts").hidden = false;
     $("whoTag").hidden = false; $("whoTag").textContent = "Admin view";
-  } else if (r === "badlink") {
-    $("badLink").hidden = false;
-    store.set(AUTH_KEY, "");
-    popup("warning", "Please log in again", "Your login code is no longer valid. The admin may have changed the codes.", {confirmButtonText: "Log in"})
-      .then(r => { if (r.isConfirmed) $("loginBtn").click(); });
   }
 }
 
 /* ---------- log in / log out ---------- */
-const normCode = c => c.trim().replace(/\s+/g, "").toUpperCase();
-$("loginBtn").addEventListener("click", () => { $("loginPanel").hidden = false; $("badLink").hidden = true; $("loginCode").focus(); });
-$("loginCancel").addEventListener("click", () => { $("loginPanel").hidden = true; $("loginStatus").textContent = ""; });
+$("loginBtn").addEventListener("click", () => { $("loginPanel").hidden = false; $("loginUser").focus(); });
+$("loginCancel").addEventListener("click", () => { $("loginPanel").hidden = true; });
 // user menu (top right): opens on click, closes on outside click or Escape
 
 function setMenu(open){ $("userDrop").hidden = !open; $("userBtn").setAttribute("aria-expanded", open); }
@@ -526,37 +537,61 @@ document.addEventListener("click", e => { if (!$("userMenu").contains(e.target))
 document.addEventListener("keydown", e => { if (e.key === "Escape") setMenu(false); });
 $("logoutBtn").addEventListener("click", async () => {
   setMenu(false);
-  if (!(await ask({title: "Log out?", text: `You are logged in as ${$("userName").textContent}. You will need your code to log in again.`, confirm: "Log out"}))) return;
-  store.set(AUTH_KEY, ""); flashLater("success", "Logged out"); location.replace(location.pathname);
+  if (!(await ask({title: "Log out?", text: `You are logged in as ${$("userName").textContent}. You will need your password to log in again.`, confirm: "Log out"}))) return;
+  try { await post("/api/auth", {action: "logout"}); } catch (e) {}
+  flashLater("success", "Logged out"); location.replace(location.pathname);
 });
 $("loginForm").addEventListener("submit", async ev => {
-  ev.preventDefault();
-  const who = $("loginWho").value, code = normCode($("loginCode").value);
-  if (!code) return;
-  const creds = who === "admin" ? {admin: code} : {e: Number(who), k: code};
-  const q = who === "admin" ? `?admin=${encodeURIComponent(code)}` : `?e=${who}&k=${encodeURIComponent(code)}`;
-  $("loginGo").disabled = true; $("loginStatus").className = "status"; $("loginStatus").textContent = "Checking…";
+  ev.preventDefault(); $("loginGo").disabled = true;
   try {
-    const r = await fetch("/api/data" + q, {cache:"no-store"}), d = await r.json();
-    const ok = who === "admin" ? d.role === "admin" : d.role === "evaluator";
-    if (!ok) throw new Error(who === "admin" ? "That admin code is not correct." : `That code does not match Evaluator ${who}. Check the code and the evaluator number.`);
-    store.set(AUTH_KEY, JSON.stringify(creds));
-    flashLater("success", who === "admin" ? "Welcome, Admin" : `Welcome, Evaluator ${who}`);
-    location.replace(location.pathname);
-  } catch (e) {
-    $("loginStatus").className = "status bad"; $("loginStatus").textContent = e.message || "Could not log in. Try again.";
-    $("loginGo").disabled = false;
-    popup("error", "Login failed", e.message || "Could not log in. Try again.");
-  }
+    const d = await post("/api/auth", {action: "login", username: $("loginUser").value, password: $("loginPass").value});
+    flashLater("success", `Welcome, ${d.name}`); location.replace(location.pathname);
+  } catch (e) { $("loginGo").disabled = false; popup("error", "Login failed", e.message); }
+});
+// Evaluators can change their own password (user menu → Change password)
+$("pwBtn").addEventListener("click", async () => {
+  setMenu(false);
+  if (!hasSwal()) return;
+  const r = await Swal.fire({ ...swalBase(), title: "Change password", showCancelButton: true, confirmButtonText: "Save password", focusConfirm: false,
+    html: `<div style="display:flex;flex-direction:column;gap:8px;text-align:left">
+      <label for="pwCur">Current password</label><input id="pwCur" type="password" class="swal2-input" style="margin:0" autocomplete="current-password">
+      <label for="pwNew">New password (at least 6 characters)</label><input id="pwNew" type="password" class="swal2-input" style="margin:0" autocomplete="new-password">
+      <label for="pwNew2">Type the new password again</label><input id="pwNew2" type="password" class="swal2-input" style="margin:0" autocomplete="new-password"></div>`,
+    preConfirm: async () => {
+      const cur = $("pwCur").value, a = $("pwNew").value, b = $("pwNew2").value;
+      if (a.length < 6) return Swal.showValidationMessage("Use at least 6 characters.");
+      if (a !== b) return Swal.showValidationMessage("The new passwords don't match.");
+      try { await post("/api/auth", {action: "change-password", current: cur, password: a}); return true; }
+      catch (e) { Swal.showValidationMessage(e.message); return false; }
+    } });
+  if (r.isConfirmed) popup("success", "Password changed", "Use your new password next time you log in.");
 });
 
+/* ---------- automatic logout after 30 minutes without activity (shared computers) ---------- */
+const IDLE_MS = 30 * 60 * 1000;
+let lastActive = Date.now();
+["pointerdown", "keydown", "scroll", "touchstart"].forEach(t => document.addEventListener(t, () => { lastActive = Date.now(); }, {passive: true}));
+setInterval(async () => {
+  if (!role || role === "viewer" || Date.now() - lastActive < IDLE_MS) return;
+  try { await post("/api/auth", {action: "logout"}); } catch (e) {}
+  flashLater("info", "Logged out after 30 minutes without activity"); location.replace(location.pathname);
+}, 30 * 1000);
+
+/* ---------- talking to the server ---------- */
+async function post(path, data){
+  const r = await fetch(path, {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(data), credentials: "same-origin"});
+  const d = await r.json().catch(() => ({}));
+  if (!r.ok) { const e = new Error(d.error || `Server error (${r.status})`); e.status = r.status; throw e; }
+  return d;
+}
+
 /* ---------- data ---------- */
-const qs = () => ADMIN ? `?admin=${encodeURIComponent(ADMIN)}` : (EV || KEY) ? `?e=${encodeURIComponent(EV)}&k=${encodeURIComponent(KEY)}` : "";
 
 let loading = false, firstLoad = true;
 
 function applyData(d){
   NEV = d.evaluators || 3;
+  me = d.me || null; EV = me && me.slot ? me.slot : 0; panel = d.panel || {};
   setRole(d.role);
   papers = (d.papers || []).slice().sort((a, b) => a.order - b.order);
   const m = {}; (d.scores || []).forEach(s => m[`${s.code}_e${s.ev}`] = s); scores = m;
@@ -565,7 +600,7 @@ function applyData(d){
   $("connStatus").className = "status";
   $("connStatus").textContent = "Updated " + new Date(d.at || Date.now()).toLocaleTimeString();
   fillThemeSelects();
-  if (role === "evaluator") { renderPaperSelect(); renderProgress(); renderMine(); if (firstLoad) loadSheet(); }
+  if (role === "evaluator") { renderPaperSelect(); renderProgress(); renderMine(); paintMailButtons(); if (firstLoad) loadSheet(); }
   if (role === "admin") renderAdmin();
   renderRanking();
   firstLoad = false;
@@ -574,7 +609,7 @@ function applyData(d){
 async function load(){
   if (loading) return; loading = true;
   try {
-    const r = await fetch("/api/data" + qs(), {cache:"no-store"});
+    const r = await fetch("/api/data", {cache:"no-store", credentials:"same-origin"});
     const d = await r.json();
     if (!r.ok) throw new Error(d.error || "Server error");
     applyData(d);
@@ -598,14 +633,15 @@ function fillThemeSelects(){
     themeSel: `<option value="">All themes (${papers.length})</option>`,
     rankTheme: `<option value="">All themes: overall ranking (${papers.length})</option><option value="each">All themes: ranked within each theme</option>`,
   };
+  if (role === "evaluator" && me) firsts.themeSel = "";
   [["themeSel","isnc.themeSel"],["rankTheme","isnc.rankTheme"]].forEach(([id, sk]) => {
     const el = $(id);
     const cur = el.options.length ? el.value : (store.get(sk) || "");
-    el.innerHTML = firsts[id] + opts;
-    el.value = [...el.options].some(o => o.value === cur) ? cur : "";
+    el.innerHTML = firsts[id] + (id === "themeSel" && role === "evaluator" && me ? `<option value="${esc(me.group)}">${esc(groupName(me.group))} (${inGroup(me.group).length})</option>` : opts);
+    el.value = [...el.options].some(o => o.value === cur) ? cur : el.options[0].value;
   });
 }
-const inTheme = () => { const g = $("themeSel").value; return g ? inGroup(g) : papers; };
+const inTheme = () => { const g = $("themeSel").value || (role === "evaluator" && me ? me.group : ""); return g ? inGroup(g) : papers; };
 
 /* ---------- score sheet (evaluators) ---------- */
 function buildSheet(){
@@ -695,8 +731,9 @@ async function submit(){
   saving = true; recalc();
   $("saveStatus").className = "status"; $("saveStatus").textContent = "Submitting…";
   try {
-    const r = await fetch("/api/score", {method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({e:EV, k:KEY, code, scores:vals, remarks:$("remarks").value.trim()})});
+    const r = await fetch("/api/score", {method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({code, scores:vals, remarks:$("remarks").value.trim()}), credentials:"same-origin"});
     const d = await r.json().catch(() => ({}));
+    if (r.status === 401) { const e = new Error(d.error || "Your login has expired."); e.expired = true; throw e; }
     if (!r.ok) throw new Error(d.error || "Could not submit.");
     mine[code] = {scores: d.saved.scores, total: d.saved.total, remarks: d.saved.remarks, updatedAt: d.saved.updatedAt};
     scores[`${code}_e${EV}`] = d.saved;
@@ -706,7 +743,8 @@ async function submit(){
     renderPaperSelect(); renderProgress(); renderMine(); renderRanking(); loadSheet();
     $("saveStatus").className = "status ok";
     $("saveStatus").textContent = `${prev ? "Changes saved" : "Submitted"}: ${fmt(t.total)} / 100 for ${code}.` + (next ? ` Next unscored: ${next.code}.` : " You have scored every paper in this list.");
-    const done = await popup("success", prev ? "Changes saved" : "Score submitted", `${code}: ${prev ? trim0(fmt(prev.total)) + " → " : ""}${trim0(fmt(t.total))} / 100.` + (next ? ` Next unscored paper: ${next.code}.` : " You have scored every paper in this list."),
+    const mailMsg = d.emailedTo ? ` You have scored every paper in your group: your Excel file was emailed to ${d.emailedTo}.` : d.emailError ? ` (Your Excel file could not be emailed: ${d.emailError})` : "";
+    const done = await popup("success", prev ? "Changes saved" : "Score submitted", `${code}: ${prev ? trim0(fmt(prev.total)) + " → " : ""}${trim0(fmt(t.total))} / 100.` + (next ? ` Next unscored paper: ${next.code}.` : d.emailedTo ? "" : " You have scored every paper in this list.") + mailMsg,
       next ? {showCancelButton: true, confirmButtonText: `Score ${next.code}`, cancelButtonText: "Stay here"} : {confirmButtonText: "Done"});
     if (next && done.isConfirmed) { $("paperSel").value = next.code; loadSheet(); renderProgress(); window.scrollTo({top: 0, behavior: "smooth"}); }
   } catch (e) {
@@ -734,7 +772,6 @@ function renderMine(){
 // Opens a saved paper on the score sheet, ready to change
 function openForEdit(code){
   const p = papers.find(x => x.code === code); if (!p) return;
-  if (!inTheme().some(x => x.code === code)) { $("themeSel").value = ""; store.set("isnc.themeSel", ""); }
   renderPaperSelect(); $("paperSel").value = code; loadSheet(); renderProgress(); show("score");
   $("sheet").scrollIntoView({behavior: "smooth", block: "start"});
 }
@@ -776,11 +813,13 @@ function renderRanking(){
   } else {
     wrap.innerHTML = themeKeys().filter(g => sel === "each" || g === sel).map(g => {
       const G = GROUPS[g] || {badge:g, label:"Theme " + g, name:""}, list = inGroup(g);
-      return list.length ? rankCard({badge:G.badge, label:`${G.label} · ${list.length} paper${list.length > 1 ? "s" : ""}`, name:G.name, list, showTheme: new Set(list.map(p => p.theme)).size > 1}) : "";
+      return list.length ? rankCard({badge:G.badge, label:`${G.label} · ${list.length} paper${list.length > 1 ? "s" : ""}`, name:G.name, list, group:g, showTheme: new Set(list.map(p => p.theme)).size > 1}) : "";
     }).join("");
   }
 }
-function rankCard({badge, label, name, list, showTheme}){
+// "Evaluator 1: Dr. Name" for admins (names come only with the admin's data); "Evaluator 1" for everyone else
+const evTitle = (group, i) => group && panel[group] && panel[group][i + 1] ? `Evaluator ${i + 1}: ${panel[group][i + 1]}` : `Evaluator ${i + 1}`;
+function rankCard({badge, label, name, list, showTheme, group}){
   const medal = r => r == null ? `<span class="medal none" aria-label="Not ranked yet">–</span>` : `<span class="medal ${r <= 3 ? "m" + r : ""}" aria-label="Rank ${r}">${r}</span>`;
   const rows = computeRanking(list), complete = rows.filter(r => r.n === NEV).length, pct = Math.round(complete / list.length * 100);
   return `<article class="tcard">
@@ -791,7 +830,7 @@ function rankCard({badge, label, name, list, showTheme}){
     </header>
     <div class="scroll"><table class="rtable"><thead><tr>
       <th class="rk">Rank</th><th class="hide-sm">Code</th>${showTheme ? `<th class="hide-md">Theme</th>` : ""}<th>Paper</th>
-      ${Array.from({length:NEV}, (_, i) => `<th class="evc hide-sm" title="Evaluator ${i + 1}">E${i + 1}</th>`).join("")}
+      ${Array.from({length:NEV}, (_, i) => `<th class="evc hide-sm" title="${esc(evTitle(group, i))}">E${i + 1}</th>`).join("")}
       <th class="num hide-lg">Research<br>Structure /40</th><th class="num hide-lg">Significance<br>/30</th><th class="num hide-lg">Presentation<br>/30</th>
       <th class="num">Average</th></tr></thead><tbody>` +
     rows.map(r => `<tr class="${r.rank === 1 ? "r1" : ""}">
@@ -824,11 +863,79 @@ function renderAdmin(){
 
 async function adminAction(body, statusEl, okMsg){
   try {
-    const r = await fetch("/api/admin", {method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({admin:ADMIN, ...body})});
+    const r = await fetch("/api/admin", {method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify(body), credentials:"same-origin"});
     const d = await r.json().catch(() => ({}));
     if (!r.ok) throw new Error(d.error || "Failed.");
     statusEl.className = "status ok"; statusEl.textContent = okMsg; toast("success", okMsg); load();
   } catch (e) { statusEl.className = "status bad"; statusEl.textContent = e.message; popup("error", "Something went wrong", e.message); }
+}
+
+/* ---------- Accounts (admin) ---------- */
+const ago = t => t ? new Date(t).toLocaleString([], {month:"short", day:"numeric", hour:"numeric", minute:"2-digit"}) : "never";
+let accounts = [];
+async function loadAccounts(){
+  try { accounts = (await post("/api/admin", {action: "accounts"})).accounts; renderAccounts(); }
+  catch (e) { popup("error", "Could not load accounts", e.message); }
+}
+function renderAccounts(){
+  const missing = accounts.filter(a => a.missing).length;
+  $("createAccBtn").hidden = !missing;
+  $("createAccBtn").textContent = missing === accounts.length ? `Create the ${missing} accounts` : `Create the ${missing} missing account${missing > 1 ? "s" : ""}`;
+  $("accBody").innerHTML = accounts.map(a => {
+    const scored = papers.filter(p => groupOf(p) === a.group && scores[`${p.code}_e${a.slot}`]).length, total = papers.filter(p => groupOf(p) === a.group).length;
+    return `<tr class="${a.active === false ? "off" : ""}">
+      <td><span class="uname">${esc(a.username)}</span></td>
+      <td>${esc(GROUPS[a.group].label)} · E${a.slot}</td>
+      <td>${a.missing ? `<span class="muted">not created yet</span>` : a.name ? esc(a.name) : `<span class="muted">no name yet</span>`}${a.active === false ? ` <span class="pill none">Disabled</span>` : ""}
+        ${a.missing ? "" : `<div class="def">${a.email ? esc(a.email) : "no email: can only download"}</div>`}</td>
+      <td class="num hide-sm">${scored}/${total}</td>
+      <td class="hide-sm muted">${a.missing ? "" : esc(ago(a.lastLogin))}</td>
+      <td class="acts">${a.missing ? "" : `<button class="btn ghost small" data-act="rename" data-u="${esc(a.username)}">Edit</button>
+        <button class="btn ghost small" data-act="reset" data-u="${esc(a.username)}">New password</button>
+        <button class="btn ghost small" data-act="${a.active === false ? "enable" : "disable"}" data-u="${esc(a.username)}">${a.active === false ? "Enable" : "Disable"}</button>`}</td></tr>`;
+  }).join("");
+  $("accBody").querySelectorAll("[data-act]").forEach(b => b.addEventListener("click", () => accountAction(b.dataset.act, accounts.find(a => a.username === b.dataset.u))));
+}
+/** Shows usernames and passwords once, with a copy button. */
+function showPasswords(title, list, note){
+  const text = list.map(x => `${x.username}\t${x.password}${x.name ? "\t" + x.name : ""}`).join("\n");
+  return Swal.fire({ ...swalBase(), icon: "success", title, width: 560, confirmButtonText: "I've saved them", showDenyButton: true, denyButtonText: "Copy all", denyButtonColor: "#6b7a70",
+    html: `<p style="margin:0 0 6px">${note}</p><table class="pwlist">${list.map(x => `<tr><td class="uname">${esc(x.username)}</td><td class="pw">${esc(x.password)}</td><td>${esc(x.name || "")}</td></tr>`).join("")}</table>`,
+    preDeny: async () => { try { await navigator.clipboard.writeText(text); Swal.showValidationMessage("Copied. Paste them somewhere safe."); } catch (e) { Swal.showValidationMessage("Couldn't copy; select the table and copy it instead."); } return false; } });
+}
+$("createAccBtn").addEventListener("click", async () => {
+  if (!(await ask({title: "Create the evaluator accounts?", text: "Each seat gets a username and a new password. The passwords are shown only once, right after this, so be ready to copy them.", confirm: "Create"}))) return;
+  try {
+    const r = await post("/api/admin", {action: "create-accounts"});
+    await loadAccounts();
+    const named = r.created.map(x => ({...x, name: (accounts.find(a => a.username === x.username) || {}).name}));
+    if (named.length) await showPasswords(`${named.length} accounts created`, named, "Copy these now. Passwords can't be shown again; use <b>New password</b> if one is lost.");
+  } catch (e) { popup("error", "Accounts not created", e.message); }
+});
+async function accountAction(act, a){
+  try {
+    if (act === "rename") {
+      const r = await Swal.fire({ ...swalBase(), title: `${a.username} · ${GROUPS[a.group].label} · E${a.slot}`, showCancelButton: true, confirmButtonText: "Save", focusConfirm: false,
+        html: `<div style="display:flex;flex-direction:column;gap:8px;text-align:left">
+          <label for="accName">Judge's name</label><input id="accName" class="swal2-input" style="margin:0" placeholder="e.g. Dr. Juan Dela Cruz" value="${esc(a.name || "")}">
+          <label for="accEmail">Email (their Excel file is sent here when they finish)</label><input id="accEmail" type="email" class="swal2-input" style="margin:0" placeholder="e.g. juan.delacruz@gmail.com" value="${esc(a.email || "")}"></div>`,
+        preConfirm: async () => {
+          try { await post("/api/admin", {action: "edit", username: a.username, name: $("accName").value, email: $("accEmail").value}); return true; }
+          catch (e) { Swal.showValidationMessage(e.message); return false; }
+        } });
+      if (!r.isConfirmed) return;
+      toast("success", "Saved");
+    }
+    if (act === "reset") {
+      if (!(await ask({title: `New password for ${a.username}?`, text: `${a.name || "This judge"}'s current password stops working right away.`, confirm: "Make new password", icon: "warning"}))) return;
+      const r = await post("/api/admin", {action: "reset-password", username: a.username});
+      await showPasswords("New password", [{...r, name: a.name}], "Give this to the judge privately. It's shown only once.");
+    }
+    if (act === "disable" && await ask({title: `Disable ${a.username}?`, text: "This account can't log in until you enable it again. Scores it already submitted stay.", confirm: "Disable", danger: true, icon: "warning"}))
+      await post("/api/admin", {action: "set-active", username: a.username, active: false});
+    if (act === "enable") await post("/api/admin", {action: "set-active", username: a.username, active: true});
+    loadAccounts(); load();
+  } catch (e) { popup("error", "Something went wrong", e.message); }
 }
 
 $("resetBtn").addEventListener("click", async () => {
@@ -839,26 +946,36 @@ $("resetBtn").addEventListener("click", async () => {
   });
   if (ok) await adminAction({action:"clear-scores"}, $("resetStatus"), "All scores deleted.");
 });
-$("csvBtn").addEventListener("click", () => {
-  const q = v => `"${String(v ?? "").replace(/"/g, '""')}"`;
-  const num = v => v == null ? "" : v.toFixed(2);
-  const remark = {}; full.forEach(s => remark[`${s.code}_e${s.ev}`] = s.remarks || "");
-  const overall = {}; computeRanking(papers).forEach(r => overall[r.p.code] = r.rank);
-  const evs = Array.from({length:NEV}, (_, i) => i + 1);
-  const head = ["Theme group","Theme","Rank in theme group","Overall rank","Code","Title","Authors"]
-    .concat(evs.map(n => `Evaluator ${n} total`))
-    .concat(["Research Structure (40)","Significance of Research Results (30)","Presentation (30)","Average (100)","Evaluators submitted"])
-    .concat(evs.map(n => `Evaluator ${n} remarks`));
-  const rows = themeKeys().flatMap(g => computeRanking(inGroup(g)).map(r => [
-    groupName(g), themeName(r.p.theme), r.rank ?? "", overall[r.p.code] ?? "", r.p.code, r.p.title, r.p.authors,
-    ...r.ev.map(s => s ? s.total : ""), num(r.s1), num(r.s2), num(r.s3), num(r.avg), r.n,
-    ...evs.map(n => remark[`${r.p.code}_e${n}`] || "")]));
-  const lines = [head].concat(rows).map(r => r.map(q).join(","));
-  const blob = new Blob(["﻿" + lines.join("\r\n")], {type:"text/csv"});
-  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "isnc2026-ranking.csv";
-  document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
-  toast("success", "Ranking downloaded");
+$("csvBtn").addEventListener("click", () => downloadXlsx());
+
+/* ---------- Excel file: download, or email to yourself (evaluators) ---------- */
+async function downloadXlsx(){
+  try {
+    const d = await post("/api/export", {action: "xlsx"});
+    const bytes = Uint8Array.from(atob(d.base64), c => c.charCodeAt(0));
+    const blob = new Blob([bytes], {type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"});
+    const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = d.filename;
+    document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+    toast("success", "Excel file downloaded");
+  } catch (e) { popup("error", "Download failed", e.message); }
+}
+$("myXlsBtn").addEventListener("click", () => downloadXlsx());
+$("myMailBtn").addEventListener("click", async () => {
+  if (!(await ask({title: "Email your Excel file?", text: `It will be sent to ${me.email}.`, confirm: "Send"}))) return;
+  try {
+    if (hasSwal()) Swal.fire({title: "Sending…", allowOutsideClick: false, didOpen: () => Swal.showLoading()});
+    const d = await post("/api/export", {action: "email"});
+    popup("success", "Email sent", `Your Excel file was sent to ${d.emailedTo}. If you don't see it in a few minutes, check Spam.`);
+  } catch (e) { popup("error", "Email not sent", e.message); }
 });
+function paintMailButtons(){
+  if (!me || role !== "evaluator") return;
+  $("myMailBtn").hidden = !me.email;
+  $("mailNote").textContent = me.email
+    ? `When you finish all your papers, your Excel file is emailed to ${me.email} automatically.`
+    : "No email address is saved for your account, so use Download. (The admin can add your email.)";
+}
+
 })();
 </script>
 </body>
