@@ -1,15 +1,46 @@
-// POST /api/admin  { admin: <key>, action: 'clear-scores' | 'delete-score', id }
+// POST /api/admin {action, ...} — admin only (logged in as "admin").
+//   Scores:   delete-score {id} · clear-scores
+//   Accounts: accounts · create-accounts · reset-password {username} · edit {username, name, email} · set-active {username, active}
 import { redis, SCORES_KEY } from '../lib/redis.js';
-import { isAdmin, send } from '../lib/auth.js';
+import { body } from '../lib/http.js';
+import {
+  currentUser, allAccounts, getAccount, saveAccount, createMissing, newPassword, hashPassword, view, SEATS, SENT, send,
+} from '../lib/accounts.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return send(res, 405, { error: 'Use POST.' });
-  let b = req.body || {};
-  if (typeof b === 'string') { try { b = JSON.parse(b); } catch (e) { b = {}; } }
-  if (!isAdmin(b.admin)) return send(res, 403, { error: 'Not allowed.' });
   try {
-    if (b.action === 'clear-scores') { await redis('DEL', SCORES_KEY); return send(res, 200, { ok: true }); }
-    if (b.action === 'delete-score' && b.id) { await redis('HDEL', SCORES_KEY, String(b.id)); return send(res, 200, { ok: true }); }
+    const me = await currentUser(req);
+    if (!me || me.role !== 'admin') return send(res, 403, { error: 'Admins only. Log in again as admin.' });
+    const b = body(req);
+    switch (b.action) {
+      case 'clear-scores': await redis('DEL', SCORES_KEY); await redis('DEL', SENT); return send(res, 200, { ok: true });
+      case 'delete-score': if (!b.id) break; await redis('HDEL', SCORES_KEY, String(b.id)); return send(res, 200, { ok: true });
+
+      case 'accounts': {
+        const have = await allAccounts();
+        return send(res, 200, { accounts: SEATS.map(s => have[s.username] ? view(have[s.username]) : { ...s, missing: true }) });
+      }
+      case 'create-accounts': return send(res, 200, { created: await createMissing() });
+      case 'reset-password': {
+        const a = await getAccount(b.username); if (!a) return send(res, 404, { error: 'No such account.' });
+        const password = newPassword();
+        a.pass = await hashPassword(password); a.generated = true; a.passChangedAt = null; await saveAccount(a);
+        return send(res, 200, { username: a.username, password });
+      }
+      case 'edit': {
+        const a = await getAccount(b.username); if (!a) return send(res, 404, { error: 'No such account.' });
+        const email = String(b.email || '').trim().toLowerCase();
+        if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return send(res, 400, { error: 'That email address does not look right.' });
+        a.name = String(b.name || '').trim().slice(0, 120); a.email = email.slice(0, 160); await saveAccount(a);
+        return send(res, 200, { ok: true });
+      }
+      case 'set-active': {
+        const a = await getAccount(b.username); if (!a) return send(res, 404, { error: 'No such account.' });
+        a.active = Boolean(b.active); await saveAccount(a);
+        return send(res, 200, { ok: true });
+      }
+    }
     send(res, 400, { error: 'Unknown action.' });
   } catch (e) {
     send(res, 500, { error: e.message });
