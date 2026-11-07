@@ -1,10 +1,10 @@
 // POST /api/auth {action:"login", username, password}
 // POST /api/auth {action:"logout"}
 // POST /api/auth {action:"change-password", current, password}   (evaluators)
-import { body, clientIp } from '../lib/http.js';
+import { body } from '../lib/http.js';
 import {
   checkLogin, startSession, endSession, currentUser, getAccount, saveAccount, passwordMatches,
-  tooManyFails, addFail, clearFails, normUser, send,
+  normUser, send,
 } from '../lib/accounts.js';
 
 export default async function handler(req, res) {
@@ -12,11 +12,10 @@ export default async function handler(req, res) {
   try {
     const b = body(req);
     if (b.action === 'login') {
-      const user = normUser(b.username), ipKey = 'ip:' + clientIp(req), userKey = 'user:' + user;
-      if (await tooManyFails(userKey) || await tooManyFails(ipKey)) return send(res, 429, { error: 'Too many wrong tries. Wait 15 minutes, then try again.' });
+      // No lock after wrong passwords: a judge can always try again.
+      const user = normUser(b.username);
       const who = user && await checkLogin(user, b.password);
-      if (!who) { await addFail(userKey); await addFail(ipKey); return send(res, 401, { error: 'Wrong username or password.' }); }
-      await clearFails(userKey);
+      if (!who) return send(res, 401, { error: 'Wrong username or password.' });
       await startSession(res, req, who.username);
       return send(res, 200, { ok: true, name: who.name || who.username });
     }
