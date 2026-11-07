@@ -31,9 +31,10 @@ export default async function handler(req, res) {
       case 'deleted-papers': return send(res, 200, { papers: await deletedPapers() });
       case 'delete-paper': {
         const code = String(b.code || '');
-        if (!(await getPapers()).some(p => p.code === code)) return send(res, 404, { error: 'No such paper.' });
+        const paper = (await getPapers()).find(p => p.code === code);
+        if (!paper) return send(res, 404, { error: 'No such paper.' });
         const n = (await allScores()).filter(x => x.code === code).length;
-        if (n) return send(res, 400, { error: `${code} already has ${n} score${n > 1 ? 's' : ''}. Delete them in the Admin tab first, then delete the paper.` });
+        if (n) return send(res, 400, { error: `${paper.label} already has ${n} score${n > 1 ? 's' : ''}. Delete them in the Admin tab first, then delete the paper.` });
         await deletePaper(code); return send(res, 200, { ok: true });
       }
       case 'restore-paper': await restorePaper(String(b.code || '')); return send(res, 200, { ok: true });

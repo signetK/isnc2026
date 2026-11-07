@@ -11,7 +11,7 @@ export default async function handler(req, res) {
   if (req.method !== 'GET') return send(res, 405, { error: 'Use GET.' });
   try {
     const [user, all, list] = await Promise.all([currentUser(req), allScores(), getPapers()]);
-    const papers = list.map(p => ({ code: p.code, group: p.group, theme: p.theme, no: p.no, session: p.session, title: p.title, authors: p.authors, order: p.order }));
+    const papers = list.map(p => ({ code: p.code, label: p.label, group: p.group, theme: p.theme, no: p.no, session: p.session, title: p.title, authors: p.authors, order: p.order }));
     const scores = all.map(s => ({ code: s.code, ev: s.ev, s1: s.s1, s2: s.s2, s3: s.s3, total: s.total }));
     const out = { role: user ? user.role : 'viewer', evaluators: EVALUATORS, papers, scores, at: Date.now() };
     if (user && user.role === 'evaluator') {
