@@ -1,7 +1,10 @@
 // POST /api/admin {action, ...} — admin only (logged in as "admin").
 //   Scores:   delete-score {id} · clear-scores
 //   Accounts: accounts (with passwords) · create-accounts · edit {username, name, email} · set-active {username, active}
-import { redis, SCORES_KEY } from '../lib/redis.js';
+//   Papers:   add-paper {theme, group, no, session, title, authors} · delete-paper {code} · restore-paper {code}
+//             deleted-papers · move-paper {code, group}   (Theme 2 papers: Group A "2a" or Group B "2b")
+import { redis, SCORES_KEY, allScores } from '../lib/redis.js';
+import { setGroup, addPaper, deletePaper, restorePaper, deletedPapers, getPapers } from '../lib/catalog.js';
 import { body } from '../lib/http.js';
 import {
   currentUser, allAccounts, getAccount, saveAccount, createMissing, upgradePasswords, view, SEATS, SENT, send,
@@ -22,6 +25,18 @@ export default async function handler(req, res) {
         return send(res, 200, { upgraded, accounts: SEATS.map(s => have[s.username] ? view(have[s.username]) : { ...s, missing: true }) });
       }
       case 'create-accounts': return send(res, 200, { created: await createMissing() });
+
+      case 'move-paper': await setGroup(String(b.code || ''), String(b.group || '')); return send(res, 200, { ok: true });
+      case 'add-paper': return send(res, 200, { paper: await addPaper(b) });
+      case 'deleted-papers': return send(res, 200, { papers: await deletedPapers() });
+      case 'delete-paper': {
+        const code = String(b.code || '');
+        if (!(await getPapers()).some(p => p.code === code)) return send(res, 404, { error: 'No such paper.' });
+        const n = (await allScores()).filter(x => x.code === code).length;
+        if (n) return send(res, 400, { error: `${code} already has ${n} score${n > 1 ? 's' : ''}. Delete them in the Admin tab first, then delete the paper.` });
+        await deletePaper(code); return send(res, 200, { ok: true });
+      }
+      case 'restore-paper': await restorePaper(String(b.code || '')); return send(res, 200, { ok: true });
       case 'edit': {
         const a = await getAccount(b.username); if (!a) return send(res, 404, { error: 'No such account.' });
         const email = String(b.email || '').trim().toLowerCase();

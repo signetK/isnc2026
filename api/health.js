@@ -7,6 +7,7 @@ export default async function handler(req, res) {
   const load = async (name, importer) => { try { const m = await importer(); out.files[name] = 'ok'; return m; } catch (e) { out.files[name] = 'PROBLEM: ' + e.message.split('\n')[0]; return null; } };
   await load('lib/criteria.js', () => import('../lib/criteria.js'));
   await load('lib/papers.js', () => import('../lib/papers.js'));
+  await load('lib/catalog.js', () => import('../lib/catalog.js'));
   const redis = await load('lib/redis.js', () => import('../lib/redis.js'));
   await load('lib/http.js', () => import('../lib/http.js'));
   const accounts = await load('lib/accounts.js', () => import('../lib/accounts.js'));
@@ -23,7 +24,13 @@ export default async function handler(req, res) {
   const v = process.env.ADMIN_KEY;
   out.ADMIN_KEY = !v ? 'MISSING: this is the admin password' : v !== v.trim() ? 'set — PROBLEM: has a space at the start/end' : `set (${v.length} characters)`;
   out.SMTP_USER = process.env.SMTP_USER ? `set (${String(process.env.SMTP_USER).trim()})` : 'MISSING: the Gmail address that sends the Excel files';
-  out.SMTP_PASS = process.env.SMTP_PASS ? (String(process.env.SMTP_PASS).replace(/\s+/g, '').length === 16 ? 'set (16 letters)' : 'set — PROBLEM: a Gmail App Password has 16 letters') : 'MISSING: the Gmail App Password';
+  const brevo = /brevo|sendinblue/i.test(process.env.SMTP_HOST || '');
+  out.SMTP_PASS = !process.env.SMTP_PASS ? 'MISSING: the App Password (Gmail) or SMTP key (Brevo)'
+    : brevo || process.env.SMTP_HOST ? `set (${String(process.env.SMTP_PASS).trim().length} characters)`
+    : String(process.env.SMTP_PASS).replace(/\s+/g, '').length === 16 ? 'set (16 letters)' : 'set — PROBLEM: a Gmail App Password has 16 letters';
+  out.emailService = brevo ? `Brevo (${process.env.SMTP_HOST})` : process.env.SMTP_HOST ? process.env.SMTP_HOST : 'Gmail';
+  out.sendsFrom = String(process.env.MAIL_FROM || process.env.SMTP_USER || '').trim() || 'not set';
+  if (brevo && !process.env.MAIL_FROM) out.sendsFrom = 'MISSING: add MAIL_FROM = the sender email you verified in Brevo';
   try { await import('nodemailer'); out.emailLibrary = 'installed'; } catch (e) { out.emailLibrary = 'MISSING: upload package.json and package-lock.json, then redeploy'; }
 
   try {

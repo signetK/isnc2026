@@ -5,6 +5,7 @@ import { body, siteUrl } from '../lib/http.js';
 import { allScores } from '../lib/redis.js';
 import { currentUser, send } from '../lib/accounts.js';
 import { buildReport } from '../lib/report.js';
+import { getPapers } from '../lib/catalog.js';
 import { emailReport, panelNames } from '../lib/deliver.js';
 
 export default async function handler(req, res) {
@@ -15,7 +16,7 @@ export default async function handler(req, res) {
     const b = body(req);
     if (b.action === 'xlsx') {
       const scores = await allScores();
-      const { buffer, filename } = buildReport({ viewer: me, scores, names: me.role === 'admin' ? await panelNames() : {} });
+      const { buffer, filename } = buildReport({ viewer: me, scores, papers: await getPapers(), names: me.role === 'admin' ? await panelNames() : {} });
       return send(res, 200, { filename, base64: buffer.toString('base64') });
     }
     if (b.action === 'email') {

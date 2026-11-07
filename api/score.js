@@ -1,22 +1,20 @@
 // POST /api/score { code, scores: {1a..3b}, remarks } — save or edit the logged-in evaluator's score for one paper.
 // The evaluator number comes from the account, and the paper must be in the account's theme group.
-import { PAPERS } from '../lib/papers.js';
+import { getPapers } from '../lib/catalog.js';
 import { CRITERIA } from '../lib/criteria.js';
 import { redis, SCORES_KEY } from '../lib/redis.js';
 import { body, siteUrl } from '../lib/http.js';
 import { afterScore } from '../lib/deliver.js';
 import { currentUser, send } from '../lib/accounts.js';
 
-const groupOf = p => String(p.group || (p.theme === '4' || p.theme === '5' ? '4-5' : p.theme));
-
 export default async function handler(req, res) {
   if (req.method !== 'POST') return send(res, 405, { error: 'Use POST.' });
   try {
     const user = await currentUser(req);
     if (!user || user.role !== 'evaluator') return send(res, 401, { error: 'Your login has expired. Log in again; your entries are still on the sheet.' });
-    const b = body(req), code = String(b.code || ''), paper = PAPERS.find(p => p.code === code);
+    const b = body(req), code = String(b.code || ''), paper = (await getPapers()).find(p => p.code === code);
     if (!paper) return send(res, 400, { error: 'That paper is not on the list. Reload the page.' });
-    if (groupOf(paper) !== user.group) return send(res, 403, { error: 'That paper is not in your theme group.' });
+    if (paper.group !== user.group) return send(res, 403, { error: 'That paper is not in your panel\'s group.' });
 
     const clean = {}, sub = { s1: 0, s2: 0, s3: 0 };
     for (const c of CRITERIA) {

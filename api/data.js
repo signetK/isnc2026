@@ -2,18 +2,16 @@
 //   Everyone:   papers + score totals (for the ranking).
 //   Evaluator:  + their own full score sheets ("mine") and their seat.
 //   Admin:      + every score sheet with remarks, and the judges' names per seat.
-import { PAPERS } from '../lib/papers.js';
+import { getPapers } from '../lib/catalog.js';
 import { EVALUATORS } from '../lib/criteria.js';
 import { allScores } from '../lib/redis.js';
 import { currentUser, allAccounts, GROUPS, maskEmail, send } from '../lib/accounts.js';
 
-const groupOf = p => String(p.group || (p.theme === '4' || p.theme === '5' ? '4-5' : p.theme));
-
 export default async function handler(req, res) {
   if (req.method !== 'GET') return send(res, 405, { error: 'Use GET.' });
   try {
-    const [user, all] = await Promise.all([currentUser(req), allScores()]);
-    const papers = PAPERS.map((p, i) => ({ code: p.code, group: groupOf(p), theme: p.theme, title: p.title, authors: p.authors, order: i }));
+    const [user, all, list] = await Promise.all([currentUser(req), allScores(), getPapers()]);
+    const papers = list.map(p => ({ code: p.code, group: p.group, theme: p.theme, no: p.no, session: p.session, title: p.title, authors: p.authors, order: p.order }));
     const scores = all.map(s => ({ code: s.code, ev: s.ev, s1: s.s1, s2: s.s2, s3: s.s3, total: s.total }));
     const out = { role: user ? user.role : 'viewer', evaluators: EVALUATORS, papers, scores, at: Date.now() };
     if (user && user.role === 'evaluator') {
