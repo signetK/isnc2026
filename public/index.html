@@ -859,7 +859,7 @@ function openForEdit(code){
 
 function renderPaperSelect(){
   const sel = $("paperSel"), cur = sel.value, list = inTheme();
-  sel.innerHTML = list.length ? `<option value="">Choose a paper…</option>` + list.map(p => `<option value="${esc(p.code)}">${mine[p.code] ? "✓ " : ""}${p.no ? `#${p.no} · ` : ""}${esc(p.title)} (${esc(p.code)})</option>`).join("") : `<option value="">No papers in this theme</option>`;
+  sel.innerHTML = list.length ? `<option value="">Choose a paper…</option>` + list.map(p => `<option value="${esc(p.code)}">${mine[p.code] ? "✓ " : ""}${esc(p.code)} · ${esc(p.title)}${p.no ? ` (#${p.no})` : ""}</option>`).join("") : `<option value="">No papers in this theme</option>`;
   if (list.some(p => p.code === cur)) sel.value = cur;
 }
 
@@ -868,7 +868,7 @@ function renderProgress(){
   if (!list.length) { box.innerHTML = `<span class="note">No papers yet.</span>`; return; }
   const done = list.filter(p => mine[p.code]).length;
   box.innerHTML = `<span class="pill ${done === list.length ? "done" : done ? "part" : "none"}">${done} of ${list.length} scored${$("themeSel").value ? " in this theme" : ""}</span>` +
-    list.map(p => `<button type="button" class="chip ${mine[p.code] ? "done" : ""} ${$("paperSel").value === p.code ? "cur" : ""}" data-p="${esc(p.code)}" title="${esc(p.title)}">${mine[p.code] ? "✓ " : ""}${esc(p.no ? "#" + p.no : p.code)}</button>`).join("");
+    list.map(p => `<button type="button" class="chip ${mine[p.code] ? "done" : ""} ${$("paperSel").value === p.code ? "cur" : ""}" data-p="${esc(p.code)}" title="${esc((p.no ? "Presentation #" + p.no + " · " : "") + p.title)}">${mine[p.code] ? "✓ " : ""}${esc(p.code)}</button>`).join("");
   box.querySelectorAll(".chip").forEach(c => c.addEventListener("click", () => { $("paperSel").value = c.dataset.p; loadSheet(); renderProgress(); }));
 }
 
