@@ -496,6 +496,8 @@ const THEMES = {
 };
 const ALL = CRITERIA.flatMap(s => s.items.map(i => ({...i, sec:s.key})));
 const $ = id => document.getElementById(id);
+/** The code people see for a paper (follows the presentation order, e.g. T1-01). */
+const L = code => { const p = papers.find(x => x.code === code); return p ? p.label : code; };
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const fmt = n => n == null || !isFinite(n) ? "—" : (Math.round(n*100)/100).toFixed(2);
 const trim0 = s => s.replace(/\.00$/, "");
@@ -778,7 +780,7 @@ function recalc(){
 
 function loadSheet(){
   const code = $("paperSel").value, paper = papers.find(p => p.code === code), ex = code ? mine[code] : null;
-  $("sheetTitle").textContent = paper ? `${paper.code} · ${paper.title}` : "Score sheet";
+  $("sheetTitle").textContent = paper ? `${paper.label} · ${paper.title}` : "Score sheet";
   $("sheetMeta").textContent = !paper ? "Choose a paper to score." :
     `${paper.no ? `Presentation #${paper.no}${paper.session ? " · " + paper.session : ""} · ` : ""}${themeName(paper.theme)} · ${paper.authors || "—"}` + (ex ? ` · Saved ${when(ex.updatedAt)} with ${trim0(fmt(ex.total))} / 100. Change any box and press Save changes.` : " · Not yet scored by you.");
   $("editTag").hidden = !ex;
@@ -823,10 +825,10 @@ async function submit(){
     saving = false;
     renderPaperSelect(); renderProgress(); renderMine(); renderRanking(); loadSheet();
     $("saveStatus").className = "status ok";
-    $("saveStatus").textContent = `${prev ? "Changes saved" : "Submitted"}: ${fmt(t.total)} / 100 for ${code}.` + (next ? ` Next unscored: ${next.code}.` : " You have scored every paper in this list.");
+    $("saveStatus").textContent = `${prev ? "Changes saved" : "Submitted"}: ${fmt(t.total)} / 100 for ${L(code)}.` + (next ? ` Next unscored: ${next.label}.` : " You have scored every paper in this list.");
     const mailMsg = d.emailedTo ? ` You have scored every paper in your group: your Excel file was emailed to ${d.emailedTo}.` : d.emailError ? ` (Your Excel file could not be emailed: ${d.emailError})` : "";
-    const done = await popup("success", prev ? "Changes saved" : "Score submitted", `${code}: ${prev ? trim0(fmt(prev.total)) + " → " : ""}${trim0(fmt(t.total))} / 100.` + (next ? ` Next unscored paper: ${next.code}.` : d.emailedTo ? "" : " You have scored every paper in this list.") + mailMsg,
-      next ? {showCancelButton: true, confirmButtonText: `Score ${next.code}`, cancelButtonText: "Stay here"} : {confirmButtonText: "Done"});
+    const done = await popup("success", prev ? "Changes saved" : "Score submitted", `${L(code)}: ${prev ? trim0(fmt(prev.total)) + " → " : ""}${trim0(fmt(t.total))} / 100.` + (next ? ` Next unscored paper: ${next.label}.` : d.emailedTo ? "" : " You have scored every paper in this list.") + mailMsg,
+      next ? {showCancelButton: true, confirmButtonText: `Score ${next.label}`, cancelButtonText: "Stay here"} : {confirmButtonText: "Done"});
     if (next && done.isConfirmed) { $("paperSel").value = next.code; loadSheet(); renderProgress(); window.scrollTo({top: 0, behavior: "smooth"}); }
   } catch (e) {
     saving = false; recalc();
@@ -841,7 +843,7 @@ const when = t => t ? new Date(t).toLocaleString([], {month:"short", day:"numeri
 function renderMine(){
   const rows = papers.filter(p => mine[p.code]);
   $("mineBody").innerHTML = rows.length ? rows.map(p => `<tr>
-      <td class="ccell hide-sm">${esc(p.code)}</td>
+      <td class="ccell hide-sm">${esc(p.label)}</td>
       <td><div class="pcode show-sm">${esc(p.code)}</div><div class="ptitle">${esc(p.title)}</div>${mine[p.code].remarks ? `<div class="pauth">“${esc(mine[p.code].remarks)}”</div>` : ""}</td>
       <td class="hide-sm">${esc(GROUPS[groupOf(p)] ? GROUPS[groupOf(p)].label : "Theme " + p.theme)}</td>
       <td class="num"><b>${fmt(mine[p.code].total)}</b></td>
@@ -859,7 +861,7 @@ function openForEdit(code){
 
 function renderPaperSelect(){
   const sel = $("paperSel"), cur = sel.value, list = inTheme();
-  sel.innerHTML = list.length ? `<option value="">Choose a paper…</option>` + list.map(p => `<option value="${esc(p.code)}">${mine[p.code] ? "✓ " : ""}${esc(p.code)} · ${esc(p.title)}${p.no ? ` (#${p.no})` : ""}</option>`).join("") : `<option value="">No papers in this theme</option>`;
+  sel.innerHTML = list.length ? `<option value="">Choose a paper…</option>` + list.map(p => `<option value="${esc(p.code)}">${mine[p.code] ? "✓ " : ""}${esc(p.label)} · ${esc(p.title)}${p.no ? ` (#${p.no})` : ""}</option>`).join("") : `<option value="">No papers in this theme</option>`;
   if (list.some(p => p.code === cur)) sel.value = cur;
 }
 
@@ -868,7 +870,7 @@ function renderProgress(){
   if (!list.length) { box.innerHTML = `<span class="note">No papers yet.</span>`; return; }
   const done = list.filter(p => mine[p.code]).length;
   box.innerHTML = `<span class="pill ${done === list.length ? "done" : done ? "part" : "none"}">${done} of ${list.length} scored${$("themeSel").value ? " in this theme" : ""}</span>` +
-    list.map(p => `<button type="button" class="chip ${mine[p.code] ? "done" : ""} ${$("paperSel").value === p.code ? "cur" : ""}" data-p="${esc(p.code)}" title="${esc((p.no ? "Presentation #" + p.no + " · " : "") + p.title)}">${mine[p.code] ? "✓ " : ""}${esc(p.code)}</button>`).join("");
+    list.map(p => `<button type="button" class="chip ${mine[p.code] ? "done" : ""} ${$("paperSel").value === p.code ? "cur" : ""}" data-p="${esc(p.code)}" title="${esc((p.no ? "Presentation #" + p.no + " · " : "") + p.title)}">${mine[p.code] ? "✓ " : ""}${esc(p.label)}</button>`).join("");
   box.querySelectorAll(".chip").forEach(c => c.addEventListener("click", () => { $("paperSel").value = c.dataset.p; loadSheet(); renderProgress(); }));
 }
 
@@ -917,9 +919,9 @@ function rankCard({badge, label, name, list, showTheme, group}){
       <th class="num">Average</th></tr></thead><tbody>` +
     rows.map(r => `<tr class="${r.rank === 1 ? "r1" : ""}">
       <td>${medal(r.rank)}</td>
-      <td class="ccell hide-sm">${esc(r.p.code)}</td>
+      <td class="ccell hide-sm">${esc(r.p.label)}</td>
       ${showTheme ? `<td class="hide-md"><span class="ttag" title="${esc(themeName(r.p.theme))}">Theme ${esc(r.p.theme)}</span></td>` : ""}
-      <td class="pcell"><div class="pcode show-sm">${esc(r.p.code)}${showTheme ? ` · Theme ${esc(r.p.theme)}` : ""}</div><div class="ptitle">${esc(r.p.title)}</div>
+      <td class="pcell"><div class="pcode show-sm">${esc(r.p.label)}${showTheme ? ` · Theme ${esc(r.p.theme)}` : ""}</div><div class="ptitle">${esc(r.p.title)}</div>
         <div class="pauth">${esc(r.p.authors)}${showTheme ? `<span class="show-md">Theme ${esc(r.p.theme)}</span>` : ""}</div>
         <div class="evline show-sm">${r.ev.map((s, i) => `E${i + 1} ${s ? trim0(fmt(s.total)) : "–"}`).join(" · ")}</div>
         <div class="pstat">${panelTag(r.p) ? `<span class="ttag">${panelTag(r.p)}</span> ` : ""}<span class="pill ${r.n === NEV ? "done" : r.n ? "part" : "none"}">${r.n === NEV ? "Complete" : r.n + " of " + NEV + " scored"}</span></div></td>
@@ -933,7 +935,7 @@ $("rankSearch").addEventListener("input", () => renderRanking());
 
 /* ---------- search by title or author: every typed word must appear (accents and capitals don't matter) ---------- */
 const plain = t => String(t || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
-const matches = (p, q) => { const hay = plain(`${p.title} ${p.authors} ${p.code}`); return plain(q).split(/\s+/).filter(Boolean).every(w => hay.includes(w)); };
+const matches = (p, q) => { const hay = plain(`${p.title} ${p.authors} ${p.label} ${p.code}`); return plain(q).split(/\s+/).filter(Boolean).every(w => hay.includes(w)); };
 function renderSearch(){
   const q = $("paperSearch").value, box = $("searchResults");
   if (!q.trim()) { box.hidden = true; box.innerHTML = ""; return; }
@@ -953,8 +955,8 @@ $("paperSearch").addEventListener("input", renderSearch);
 /* ---------- organizer ---------- */
 function renderAdmin(){
   const byCode = Object.fromEntries(papers.map(p => [p.code, p]));
-  const rows = full.slice().sort((a, b) => a.code.localeCompare(b.code) || a.ev - b.ev);
-  $("adminBody").innerHTML = rows.length ? rows.map(s => `<tr><td><strong>${esc(s.code)}</strong> <span class="def">${esc(byCode[s.code] ? byCode[s.code].title : "")}</span></td><td class="num">${s.ev}</td><td class="num">${fmt(s.total)}</td><td>${esc(s.remarks || "")}</td><td class="muted">${s.updatedAt ? new Date(s.updatedAt).toLocaleString() : ""}${s.edits ? `<span class="def">edited ${s.edits}×</span>` : ""}</td><td><button class="btn danger small" type="button" data-del="${esc(s.code + "_e" + s.ev)}">Delete</button></td></tr>`).join("")
+  const rows = full.slice().sort((a, b) => (byCode[a.code] ? byCode[a.code].order : 1e9) - (byCode[b.code] ? byCode[b.code].order : 1e9) || a.ev - b.ev);
+  $("adminBody").innerHTML = rows.length ? rows.map(s => `<tr><td><strong>${esc(byCode[s.code] ? byCode[s.code].label : s.code)}</strong> <span class="def">${esc(byCode[s.code] ? byCode[s.code].title : "")}</span></td><td class="num">${s.ev}</td><td class="num">${fmt(s.total)}</td><td>${esc(s.remarks || "")}</td><td class="muted">${s.updatedAt ? new Date(s.updatedAt).toLocaleString() : ""}${s.edits ? `<span class="def">edited ${s.edits}×</span>` : ""}</td><td><button class="btn danger small" type="button" data-del="${esc(s.code + "_e" + s.ev)}">Delete</button></td></tr>`).join("")
     : `<tr><td colspan="6" class="muted">No scores submitted yet.</td></tr>`;
   $("adminBody").querySelectorAll("[data-del]").forEach(b => b.addEventListener("click", async () => {
     const [code, ev] = b.dataset.del.split("_e");
@@ -984,25 +986,25 @@ function renderPapers(){
   $("pgBody").innerHTML = list.length ? list.map(p => {
     const n = scoredCount(p), g = groupOf(p);
     const panel = p.theme === "2"
-      ? `<select data-move="${esc(p.code)}" aria-label="Group for ${esc(p.code)}"><option value="2a" ${g === "2a" ? "selected" : ""}>Group A</option><option value="2b" ${g === "2b" ? "selected" : ""}>Group B</option></select>`
+      ? `<select data-move="${esc(p.code)}" aria-label="Group for ${esc(p.label)}"><option value="2a" ${g === "2a" ? "selected" : ""}>Group A</option><option value="2b" ${g === "2b" ? "selected" : ""}>Group B</option></select>`
       : `${esc(GROUPS[g] ? GROUPS[g].label : g)}${p.theme === "4" || p.theme === "5" ? ` <span class="def">Theme ${esc(p.theme)}</span>` : ""}`;
-    return `<tr><td class="ccell">${esc(p.code)}</td><td><div class="ptitle">${p.no ? `<span class="pcode">#${p.no}</span> ` : ""}${esc(p.title)}</div><div class="pauth">${esc(p.authors)}</div>${p.session ? `<div class="def">${esc(p.session)}</div>` : ""}</td>
+    return `<tr><td class="ccell">${esc(p.label)}</td><td><div class="ptitle">${p.no ? `<span class="pcode">#${p.no}</span> ` : ""}${esc(p.title)}</div><div class="pauth">${esc(p.authors)}</div>${p.session ? `<div class="def">${esc(p.session)}</div>` : ""}</td>
       <td>${panel}</td><td class="num hide-sm">${n}/${NEV}</td>
       <td><button class="btn danger small" type="button" data-del-paper="${esc(p.code)}">Delete</button></td></tr>`;
   }).join("") : `<tr><td colspan="5" class="muted">No papers match.</td></tr>`;
   $("pgBody").querySelectorAll("[data-move]").forEach(sel => sel.addEventListener("change", async () => {
     const p = papers.find(x => x.code === sel.dataset.move), n = scoredCount(p), to = GROUPS[sel.value].label;
-    if (n && !(await ask({title: `Move ${p.code} to ${to}?`, text: `${p.code} already has ${n} score${n > 1 ? "s" : ""}. They'll count as ${to}'s judges' scores.`, confirm: "Move", icon: "warning"}))) { renderPapers(); return; }
-    try { await post("/api/admin", {action: "move-paper", code: p.code, group: sel.value}); p.group = sel.value; toast("success", `${p.code} → ${to}`); renderPapers(); load(); }
+    if (n && !(await ask({title: `Move ${p.label} to ${to}?`, text: `${p.label} already has ${n} score${n > 1 ? "s" : ""}. They'll count as ${to}'s judges' scores.`, confirm: "Move", icon: "warning"}))) { renderPapers(); return; }
+    try { await post("/api/admin", {action: "move-paper", code: p.code, group: sel.value}); p.group = sel.value; toast("success", `${p.label} → ${to}`); renderPapers(); load(); }
     catch (e) { popup("error", "Not moved", e.message); renderPapers(); }
   }));
   $("pgBody").querySelectorAll("[data-del-paper]").forEach(b => b.addEventListener("click", async () => {
     await load(); // fresh scores, so a paper scored a moment ago isn't offered for deletion
     const p = papers.find(x => x.code === b.dataset.delPaper), n = p ? scoredCount(p) : 0;
     if (!p) return renderPapers();
-    if (n) return popup("info", `${p.code} has ${n} score${n > 1 ? "s" : ""}`, "Delete its scores first (Admin tab → All submitted scores), then delete the paper.");
-    if (!(await ask({title: `Delete ${p.code}?`, text: `"${p.title}" will be removed from the judges' lists and the ranking. You can restore it later.`, confirm: "Delete", danger: true, icon: "warning"}))) return;
-    try { await post("/api/admin", {action: "delete-paper", code: p.code}); toast("success", `${p.code} deleted`); await load(); renderPapers(); loadDeleted(); }
+    if (n) return popup("info", `${p.label} has ${n} score${n > 1 ? "s" : ""}`, "Delete its scores first (Admin tab → All submitted scores), then delete the paper.");
+    if (!(await ask({title: `Delete ${p.label}?`, text: `"${p.title}" will be removed from the judges' lists and the ranking. You can restore it later.`, confirm: "Delete", danger: true, icon: "warning"}))) return;
+    try { await post("/api/admin", {action: "delete-paper", code: p.code}); toast("success", `${p.label} deleted`); await load(); renderPapers(); loadDeleted(); }
     catch (e) { popup("error", "Not deleted", e.message); }
   }));
 }
@@ -1010,7 +1012,7 @@ async function loadDeleted(){
   try {
     const list = (await post("/api/admin", {action: "deleted-papers"})).papers;
     $("delPanel").hidden = !list.length;
-    $("delBody").innerHTML = list.map(p => `<tr><td class="ccell">${esc(p.code)}</td><td><div class="ptitle">${esc(p.title)}</div><div class="pauth">${esc(p.authors)}</div></td>
+    $("delBody").innerHTML = list.map(p => `<tr><td class="ccell">—</td><td><div class="ptitle">${esc(p.title)}</div><div class="pauth">${esc(p.authors)}</div></td>
       <td><button class="btn ghost small" type="button" data-restore="${esc(p.code)}">Restore</button></td></tr>`).join("");
     $("delBody").querySelectorAll("[data-restore]").forEach(b => b.addEventListener("click", async () => {
       try { await post("/api/admin", {action: "restore-paper", code: b.dataset.restore}); toast("success", `${b.dataset.restore} restored`); await load(); renderPapers(); loadDeleted(); }
@@ -1027,7 +1029,7 @@ $("npAdd").addEventListener("click", async () => {
     const d = await post("/api/admin", {action: "add-paper", theme, group: theme === "2" ? $("npGroup").value : "", no: $("npNo").value, session: $("npSession").value, title, authors: $("npAuthors").value});
     ["npTitle", "npAuthors", "npNo"].forEach(id => $(id).value = "");
     await load(); renderPapers();
-    popup("success", `Added as ${d.paper.code}`, `${d.paper.title}, in ${GROUPS[papers.find(p => p.code === d.paper.code).group].label}.`);
+    popup("success", `Added as ${L(d.paper.code)}`, `${d.paper.title}, in ${GROUPS[papers.find(p => p.code === d.paper.code).group].label}.`);
   } catch (e) { popup("error", "Not added", e.message); }
 });
 $("pgFilter").addEventListener("change", renderPapers);
