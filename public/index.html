@@ -407,7 +407,7 @@ textarea#remarks:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
   <div class="panel">
     <div>
       <h2>Papers</h2>
-      <p class="note">The list comes from the theme document, in the conference program's order (#number and session), plus any papers added here. For Theme 2, choose <b>Group A</b> or <b>Group B</b> for each paper; each group has its own judges and its own ranking. Move papers before scoring starts: a score stays with the paper, so moving a scored paper hands its scores to the other group's judges.</p>
+      <p class="note">The list comes from the theme document, in the conference program's order (#number and session), plus any papers added here. For Theme 2, choose <b>Group A</b> or <b>Group B</b> for each paper: it decides which panel of judges scores it. All Theme 2 papers are ranked together. Move papers before scoring starts: a score stays with the paper, so moving a scored paper hands its scores to the other group's judges.</p>
     </div>
     <div class="row">
       <div class="field" style="flex:0 1 240px"><label for="pgFilter">Show</label><select id="pgFilter"></select></div>
@@ -510,6 +510,18 @@ const GROUPS = {
   "4-5": {badge:"4–5", label:"Themes 4 & 5",      name:"Smart Technologies and Decarbonization; Policy and Governance for Carbon Neutrality", themes:["4","5"]},
 };
 const GROUP_KEYS = ["1", "2a", "2b", "3", "4-5"];
+// The ranking and the "Show" lists are per theme: Theme 2's Group A and Group B papers are ranked together.
+// (Groups A and B only decide which panel of judges scores a paper.)
+const THEME_GROUPS = {
+  "1":   {badge:"1",   label:"Theme 1",      name:THEMES["1"]},
+  "2":   {badge:"2",   label:"Theme 2",      name:THEMES["2"]},
+  "3":   {badge:"3",   label:"Theme 3",      name:THEMES["3"]},
+  "4-5": {badge:"4–5", label:"Themes 4 & 5", name:"Smart Technologies and Decarbonization; Policy and Governance for Carbon Neutrality"},
+};
+const THEME_KEYS = ["1", "2", "3", "4-5"];
+const themeKeyOf = p => groupOf(p).startsWith("2") ? "2" : groupOf(p);
+const inThemeGroup = t => papers.filter(p => themeKeyOf(p) === t);
+const panelTag = p => groupOf(p) === "2a" ? "Group A" : groupOf(p) === "2b" ? "Group B" : "";
 const groupOf = p => String(p.group || "");
 const groupName = g => GROUPS[g] ? `${GROUPS[g].label}: ${GROUPS[g].name}` : (g ? `Theme ${g}` : "No theme");
 
@@ -697,7 +709,7 @@ document.addEventListener("visibilitychange", () => { if (!document.hidden) load
 const themeKeys = () => GROUP_KEYS;
 const inGroup = g => papers.filter(p => groupOf(p) === g);
 function fillThemeSelects(){
-  const opts = themeKeys().map(g => `<option value="${esc(g)}">${esc(groupName(g))} (${inGroup(g).length})</option>`).join("");
+  const opts = THEME_KEYS.map(t => `<option value="${esc(t)}">${esc(THEME_GROUPS[t].label)}: ${esc(THEME_GROUPS[t].name)} (${inThemeGroup(t).length})</option>`).join("");
   const firsts = {
     themeSel: `<option value="">All themes (${papers.length})</option>`,
     rankTheme: `<option value="">All themes: overall ranking (${papers.length})</option>`,
@@ -880,8 +892,8 @@ function renderRanking(){
   if (sel === "") {
     wrap.innerHTML = rankCard({badge:"All", label:`All themes · ${papers.length} papers`, name:"Overall ranking", list:papers, showTheme:true});
   } else {
-    wrap.innerHTML = themeKeys().filter(g => g === sel).map(g => {
-      const G = GROUPS[g] || {badge:g, label:"Theme " + g, name:""}, list = inGroup(g);
+    wrap.innerHTML = THEME_KEYS.filter(t => t === sel).map(g => {
+      const G = THEME_GROUPS[g], list = inThemeGroup(g);
       return list.length ? rankCard({badge:G.badge, label:`${G.label} · ${list.length} paper${list.length > 1 ? "s" : ""}`, name:G.name, list, group:g, showTheme: new Set(list.map(p => p.theme)).size > 1}) : "";
     }).join("");
   }
@@ -910,7 +922,7 @@ function rankCard({badge, label, name, list, showTheme, group}){
       <td class="pcell"><div class="pcode show-sm">${esc(r.p.code)}${showTheme ? ` · Theme ${esc(r.p.theme)}` : ""}</div><div class="ptitle">${esc(r.p.title)}</div>
         <div class="pauth">${esc(r.p.authors)}${showTheme ? `<span class="show-md">Theme ${esc(r.p.theme)}</span>` : ""}</div>
         <div class="evline show-sm">${r.ev.map((s, i) => `E${i + 1} ${s ? trim0(fmt(s.total)) : "–"}`).join(" · ")}</div>
-        <div class="pstat"><span class="pill ${r.n === NEV ? "done" : r.n ? "part" : "none"}">${r.n === NEV ? "Complete" : r.n + " of " + NEV + " scored"}</span></div></td>
+        <div class="pstat">${panelTag(r.p) ? `<span class="ttag">${panelTag(r.p)}</span> ` : ""}<span class="pill ${r.n === NEV ? "done" : r.n ? "part" : "none"}">${r.n === NEV ? "Complete" : r.n + " of " + NEV + " scored"}</span></div></td>
       ${r.ev.map((s, i) => `<td class="evc hide-sm"><span class="ev ${s ? "" : "miss"}" title="Evaluator ${i + 1}">${s ? trim0(fmt(s.total)) : "–"}</span></td>`).join("")}
       <td class="num hide-lg">${fmt(r.s1)}</td><td class="num hide-lg">${fmt(r.s2)}</td><td class="num hide-lg">${fmt(r.s3)}</td>
       <td class="avg">${r.avg == null ? `<span class="muted">–</span>` : `<b>${fmt(r.avg)}</b><span class="of"> /100</span><div class="bar"><i style="width:${Math.max(0, Math.min(100, r.avg))}%"></i></div>`}</td>
@@ -965,10 +977,10 @@ const scoredCount = p => Array.from({length: NEV}, (_, i) => scores[`${p.code}_e
 function renderPapers(){
   if (role !== "admin") return;
   const f = $("pgFilter"), cur = f.value || "";
-  f.innerHTML = `<option value="">All papers (${papers.length})</option>` + GROUP_KEYS.map(g => `<option value="${g}">${esc(GROUPS[g].label)} (${inGroup(g).length})</option>`).join("");
+  f.innerHTML = `<option value="">All papers (${papers.length})</option>` + THEME_KEYS.map(t => `<option value="${t}">${esc(THEME_GROUPS[t].label)} (${inThemeGroup(t).length})</option>`).join("");
   f.value = [...f.options].some(o => o.value === cur) ? cur : "";
-  $("pgCounts").textContent = GROUP_KEYS.map(g => `${GROUPS[g].label}: ${inGroup(g).length}`).join(" · ");
-  const q = $("pgSearch").value, list = papers.filter(p => (!f.value || groupOf(p) === f.value) && (!q.trim() || matches(p, q)));
+  $("pgCounts").textContent = THEME_KEYS.map(t => `${THEME_GROUPS[t].label}: ${inThemeGroup(t).length}` + (t === "2" ? ` (Group A ${inGroup("2a").length} · Group B ${inGroup("2b").length})` : "")).join(" · ");
+  const q = $("pgSearch").value, list = papers.filter(p => (!f.value || themeKeyOf(p) === f.value) && (!q.trim() || matches(p, q)));
   $("pgBody").innerHTML = list.length ? list.map(p => {
     const n = scoredCount(p), g = groupOf(p);
     const panel = p.theme === "2"
