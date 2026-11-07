@@ -861,7 +861,7 @@ function openForEdit(code){
 
 function renderPaperSelect(){
   const sel = $("paperSel"), cur = sel.value, list = inTheme();
-  sel.innerHTML = list.length ? `<option value="">Choose a paper…</option>` + list.map(p => `<option value="${esc(p.code)}">${mine[p.code] ? "✓ " : ""}${esc(p.label)} · ${esc(p.title)}${p.no ? ` (#${p.no})` : ""}</option>`).join("") : `<option value="">No papers in this theme</option>`;
+  sel.innerHTML = list.length ? `<option value="">Choose a paper…</option>` + list.map(p => `<option value="${esc(p.code)}">${mine[p.code] ? "✓ " : ""}${esc(p.label)} · ${esc(p.title)}</option>`).join("") : `<option value="">No papers in this theme</option>`;
   if (list.some(p => p.code === cur)) sel.value = cur;
 }
 
