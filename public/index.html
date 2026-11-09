@@ -407,7 +407,7 @@ textarea#remarks:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
   <div class="panel">
     <div>
       <h2>Papers</h2>
-      <p class="note">The list follows the conference schedule: each code is the presentation # (T3-01 = Theme 3 #1), plus any papers added here. For Theme 2, choose <b>Group A</b> or <b>Group B</b> for each paper: it decides which panelevaluators scores it. All Theme 2 papers are ranked together. Move papers before scoring starts: a score stays with the paper, so moving a scored paper hands its scores to the other grouevaluators.</p>
+      <p class="note">The list follows the conference schedule: each code is the presentation # (T3-01 = Theme 3 #1), plus any papers added here. For Theme 2, choose <b>Group A</b> or <b>Group B</b> for each paper: it decides which panel of evaluators scores it. All Theme 2 papers are ranked together. Move papers before scoring starts: a score stays with the paper, so moving a scored paper hands its scores to the other group's evaluators.</p>
     </div>
     <div class="row">
       <div class="field" style="flex:0 1 240px"><label for="pgFilter">Show</label><select id="pgFilter"></select></div>
@@ -419,7 +419,7 @@ textarea#remarks:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
   <div class="panel" id="delPanel" hidden>
     <div>
       <h2>Deleted papers</h2>
-      <p class="note">Deleted papers are hidden fevaluators and the ranking. Restore one to put it back with the same code.</p>
+      <p class="note">Deleted papers are hidden from evaluators and the ranking. Restore one to put it back with the same code.</p>
     </div>
     <div class="scroll"><table class="list"><tbody id="delBody"></tbody></table></div>
   </div>
@@ -432,14 +432,14 @@ textarea#remarks:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
     <div class="row" style="justify-content:space-between;align-items:center">
       <div>
         <h2>Evaluator accounts</h2>
-        <p class="note">One account per panel seat: 3 evaluators for each of the 5 panels (Theme 1, Theme 2 Group A, Theme 2 Group B, Theme 3, Themes 4 &amp; 5). Give eevaluator their username and password privately. Eevaluator can only score their own panel's papeevaluators with no email use Download.</p>
+        <p class="note">One account per panel seat: 3 evaluators for each of the 5 panels (Theme 1, Theme 2 Group A, Theme 2 Group B, Theme 3, Themes 4 &amp; 5). Give each evaluator their username and password privately. Each evaluator can only score their own panel's papers. Evaluators with no email use Download.</p>
       </div>
       <div class="row" style="flex:none">
         <button class="btn ghost" id="copyAccBtn" type="button" hidden>Copy list</button>
         <button class="btn" id="createAccBtn" type="button" hidden>Create the 15 accounts</button>
       </div>
     </div>
-    <div class="scroll"><table class="list"><thead><tr><th>Username</th><th>Password</th><th>Seat</th>evaluator's name and email</th><th class="num hide-sm">Scored</th><th class="hide-sm">Last login</th><th></th></tr></thead><tbody id="accBody"></tbody></table></div>
+    <div class="scroll"><table class="list"><thead><tr><th>Username</th><th>Password</th><th>Seat</th><th>Evaluator's name and email</th><th class="num hide-sm">Scored</th><th class="hide-sm">Last login</th><th></th></tr></thead><tbody id="accBody"></tbody></table></div>
   </div>
 </section>
 
@@ -513,7 +513,7 @@ const GROUPS = {
 };
 const GROUP_KEYS = ["1", "2a", "2b", "3", "4-5"];
 // The ranking and the "Show" lists are per theme: Theme 2's Group A and Group B papers are ranked together.
-// (Groups A and B only decide which panelevaluators scores a paper.)
+// (Groups A and B only decide which panel of evaluators scores a paper.)
 const THEME_GROUPS = {
   "1":   {badge:"1",   label:"Theme 1",      name:THEMES["1"]},
   "2":   {badge:"2",   label:"Theme 2",      name:THEMES["2"]},
@@ -994,7 +994,7 @@ function renderPapers(){
   }).join("") : `<tr><td colspan="5" class="muted">No papers match.</td></tr>`;
   $("pgBody").querySelectorAll("[data-move]").forEach(sel => sel.addEventListener("change", async () => {
     const p = papers.find(x => x.code === sel.dataset.move), n = scoredCount(p), to = GROUPS[sel.value].label;
-    if (n && !(await ask({title: `Move ${p.label} to ${to}?`, text: `${p.label} already has ${n} score${n > 1 ? "s" : ""}. They'll count as ${to}'s evalautors'  scores.`, confirm: "Move", icon: "warning"}))) { renderPapers(); return; }
+    if (n && !(await ask({title: `Move ${p.label} to ${to}?`, text: `${p.label} already has ${n} score${n > 1 ? "s" : ""}. They'll count as ${to}'s evaluators' scores.`, confirm: "Move", icon: "warning"}))) { renderPapers(); return; }
     try { await post("/api/admin", {action: "move-paper", code: p.code, group: sel.value}); p.group = sel.value; toast("success", `${p.label} → ${to}`); renderPapers(); load(); }
     catch (e) { popup("error", "Not moved", e.message); renderPapers(); }
   }));
@@ -1003,7 +1003,7 @@ function renderPapers(){
     const p = papers.find(x => x.code === b.dataset.delPaper), n = p ? scoredCount(p) : 0;
     if (!p) return renderPapers();
     if (n) return popup("info", `${p.label} has ${n} score${n > 1 ? "s" : ""}`, "Delete its scores first (Admin tab → All submitted scores), then delete the paper.");
-    if (!(await ask({title: `Delete ${p.label}?`, text: `"${p.title}" will be removed from evaluators' lists and the ranking. You can restore it later.`, confirm: "Delete", danger: true, icon: "warning"}))) return;
+    if (!(await ask({title: `Delete ${p.label}?`, text: `"${p.title}" will be removed from the evaluators' lists and the ranking. You can restore it later.`, confirm: "Delete", danger: true, icon: "warning"}))) return;
     try { await post("/api/admin", {action: "delete-paper", code: p.code}); toast("success", `${p.label} deleted`); await load(); renderPapers(); loadDeleted(); }
     catch (e) { popup("error", "Not deleted", e.message); }
   }));
@@ -1040,7 +1040,7 @@ let accounts = [];
 async function loadAccounts(){
   try {
     const d = await post("/api/admin", {action: "accounts"}); accounts = d.accounts; renderAccounts();
-    if (d.upgraded && d.upgraded.length) popup("info", "Passwords simplified", `${d.upgraded.length} account${d.upgraded.length > 1 ? "s" : ""} now ${d.upgraded.length > 1 ? "have" : "has"} a new 4-character password (shown in the list). The old long passwords no longer work, so give evaluators these new ones.`);
+    if (d.upgraded && d.upgraded.length) popup("info", "Passwords simplified", `${d.upgraded.length} account${d.upgraded.length > 1 ? "s" : ""} now ${d.upgraded.length > 1 ? "have" : "has"} a new 4-character password (shown in the list). The old long passwords no longer work, so give the evaluators these new ones.`);
   }
   catch (e) { popup("error", "Could not load accounts", e.message); }
 }
@@ -1079,7 +1079,7 @@ async function accountAction(act, a){
     if (act === "rename") {
       const r = await Swal.fire({ ...swalBase(), title: `${a.username} · ${GROUPS[a.group].label} · E${a.slot}`, showCancelButton: true, confirmButtonText: "Save", focusConfirm: false,
         html: `<div style="display:flex;flex-direction:column;gap:8px;text-align:left">
-          <label for="accNaevaluator's name</label><input id="accName" class="swal2-input" style="margin:0" placeholder="e.g. Dr. Juan Dela Cruz" value="${esc(a.name || "")}">
+          <label for="accName">Evaluator's name</label><input id="accName" class="swal2-input" style="margin:0" placeholder="e.g. Dr. Juan Dela Cruz" value="${esc(a.name || "")}">
           <label for="accEmail">Email (their Excel file is sent here when they finish)</label><input id="accEmail" type="email" class="swal2-input" style="margin:0" placeholder="e.g. juan.delacruz@gmail.com" value="${esc(a.email || "")}"></div>`,
         preConfirm: async () => {
           try { await post("/api/admin", {action: "edit", username: a.username, name: $("accName").value, email: $("accEmail").value}); return true; }
