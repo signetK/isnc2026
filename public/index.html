@@ -178,7 +178,7 @@ tr.r1 td{background:var(--rowtint)}
 .sum td{padding:6px 4px;border-bottom:1px solid var(--line);color:var(--fg)}
 .sum td:last-child{text-align:right;font-family:var(--mono)}
 .sum tr.tot td{font-weight:700;border-bottom:0;font-size:16px}
-.sum-Presentation{color:var(--fg);font-weight:600;margin:0 0 4px}
+.sum-paper{color:var(--fg);font-weight:600;margin:0 0 4px}
 /* ranking: one column per evaluator, centred under its heading */
 .rtable th{font-size:11px;letter-spacing:.04em}
 .rtable th,.rtable td{padding-inline:8px}
@@ -261,7 +261,7 @@ textarea#remarks:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
       <button role="tab" id="tab-mine" aria-selected="false" data-view="mine" hidden>My scores</button>
       <button role="tab" id="tab-admin" aria-selected="false" data-view="admin" hidden>Admin</button>
       <button role="tab" id="tab-accounts" aria-selected="false" data-view="accounts" hidden>Accounts</button>
-      <button role="tab" id="tab-Presentations" aria-selected="false" data-view="Presentations" hidden>Presentations</button>
+      <button role="tab" id="tab-papers" aria-selected="false" data-view="papers" hidden>Presentations</button>
     </nav>
     <div class="pad" id="tabsPad"></div>
   </div>
@@ -301,13 +301,13 @@ textarea#remarks:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
         <select id="themeSel"></select>
       </div>
       <div class="field" style="flex:3 1 320px">
-        <label for="PresentationSel">Presentation</label>
-        <select id="PresentationSel"><option value="">Loading Presentations…</option></select>
+        <label for="paperSel">Presentation</label>
+        <select id="paperSel"><option value="">Loading presentations…</option></select>
       </div>
     </div>
     <div class="field" style="flex:none">
-      <label for="PresentationSearch">Search by title or author</label>
-      <input type="search" id="PresentationSearch" placeholder="Type a few words of the title, e.g. mangrove" autocomplete="off">
+      <label for="paperSearch">Search by title or author</label>
+      <input type="search" id="paperSearch" placeholder="Type a few words of the title, e.g. mangrove" autocomplete="off">
       <div class="results" id="searchResults" hidden></div>
     </div>
     <div>
@@ -320,7 +320,7 @@ textarea#remarks:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
     <div>
       <div class="editTag" id="editTag" hidden>Editing your saved score</div>
       <h2 id="sheetTitle">Score sheet</h2>
-      <p class="note" id="sheetMeta">Choose a Presentation to score.</p>
+      <p class="note" id="sheetMeta">Choose a presentation to score.</p>
     </div>
     <div class="scroll">
       <table>
@@ -330,7 +330,7 @@ textarea#remarks:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
     </div>
     <div class="field" style="flex:none">
       <div class="remarksHead"><label for="remarks">Remarks (optional; the admin and the other evaluators in your theme group can see these)</label><span class="count" id="remarksCount">0 / 400</span></div>
-      <textarea id="remarks" rows="5" maxlength="400" placeholder="Comments for the Presentation: strengths, weaknesses, suggestions…"></textarea>
+      <textarea id="remarks" rows="5" maxlength="400" placeholder="Comments for the presentation: strengths, weaknesses, suggestions…"></textarea>
     </div>
     <div class="totalbar">
       <div><span class="muted">Total</span> <span class="big" id="totalOut">0</span><span class="muted"> / 100</span></div>
@@ -344,13 +344,13 @@ textarea#remarks:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
 </section>
 
 <!-- RANK VIEW (everyone) -->
-<!-- MY SCORES (evaluators): every Presentation they scored, with Edit -->
+<!-- MY SCORES (evaluators): every paper they scored, with Edit -->
 <section id="view-mine" class="view" hidden>
   <div class="panel">
     <div class="row" style="justify-content:space-between;align-items:center">
       <div>
         <h2>My scores</h2>
-        <p class="note">Every Presentation you have scored. Choose <b>Edit</b> to change a score or remark; the ranking updates right away.</p>
+        <p class="note">Every presentation you have scored. Choose <b>Edit</b> to change a score or remark; the ranking updates right away.</p>
       </div>
       <div class="row" style="flex:none">
         <button class="btn ghost" id="myXlsBtn" type="button">Download Excel file</button>
@@ -382,11 +382,11 @@ textarea#remarks:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
   </div>
 </section>
 
-<!-- PresentationS (admin): add, delete and restore Presentations, and put Theme 2 Presentations in Group A or B -->
-<section id="view-Presentations" class="view" hidden>
+<!-- PAPERS (admin): add, delete and restore papers, and put Theme 2 papers in Group A or B -->
+<section id="view-papers" class="view" hidden>
   <div class="panel">
     <div>
-      <h2>Add a Presentation</h2>
+      <h2>Add a presentation</h2>
       <p class="note">Its code follows its presentation # (e.g. Theme 2 #35 shows as T2-35); without a #, it goes last in its theme. It appears right away for that panel's evaluators.</p>
     </div>
     <div class="row">
@@ -400,13 +400,13 @@ textarea#remarks:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
     <div class="row">
       <div class="field" style="flex:3 1 300px"><label for="npTitle">Title</label><input type="text" id="npTitle" maxlength="400"></div>
       <div class="field" style="flex:2 1 220px"><label for="npAuthors">Authors</label><input type="text" id="npAuthors" maxlength="600"></div>
-      <button class="btn" id="npAdd" type="button" style="flex:none">Add Presentation</button>
+      <button class="btn" id="npAdd" type="button" style="flex:none">Add presentation</button>
     </div>
   </div>
   <div class="panel">
     <div>
       <h2>Presentations</h2>
-      <p class="note">The list follows the conference schedule: each code is the presentation # (T3-01 = Theme 3 #1), plus any Presentations added here. For Theme 2, choose <b>Group A</b> or <b>Group B</b> for each Presentation: it decides which panel of evaluators scores it. All Theme 2 Presentations are ranked together. Move Presentations before scoring starts: a score stays with the Presentation, so moving a scored Presentation hands its scores to the other group's evaluators.</p>
+      <p class="note">The list follows the conference schedule: each code is the presentation # (T3-01 = Theme 3 #1), plus any presentations added here. For Theme 2, choose <b>Group A</b> or <b>Group B</b> for each presentation: it decides which panel of evaluators scores it. All Theme 2 presentations are ranked together. Move presentations before scoring starts: a score stays with the presentation, so moving a scored presentation hands its scores to the other group's evaluators.</p>
     </div>
     <div class="row">
       <div class="field" style="flex:0 1 240px"><label for="pgFilter">Show</label><select id="pgFilter"></select></div>
@@ -417,8 +417,8 @@ textarea#remarks:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
   </div>
   <div class="panel" id="delPanel" hidden>
     <div>
-      <h2>Deleted Presentations</h2>
-      <p class="note">Deleted Presentations are hidden from evaluators and the ranking. Restore one to put it back with the same code.</p>
+      <h2>Deleted presentations</h2>
+      <p class="note">Deleted presentations are hidden from evaluators and the ranking. Restore one to put it back with the same code.</p>
     </div>
     <div class="scroll"><table class="list"><tbody id="delBody"></tbody></table></div>
   </div>
@@ -431,7 +431,7 @@ textarea#remarks:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
     <div class="row" style="justify-content:space-between;align-items:center">
       <div>
         <h2>Evaluator accounts</h2>
-        <p class="note">One account per panel seat: 3 evaluators for each of the 5 panels (Theme 1, Theme 2 Group A, Theme 2 Group B, Theme 3, Themes 4 &amp; 5). Give each evaluator their username and password privately. Each evaluator can only score their own panel's Presentations. Evaluators with no email use Download.</p>
+        <p class="note">One account per panel seat: 3 evaluators for each of the 5 panels (Theme 1, Theme 2 Group A, Theme 2 Group B, Theme 3, Themes 4 &amp; 5). Give each evaluator their username and password privately. Each evaluator can only score their own panel's papers. Evaluators with no email use Download.</p>
       </div>
       <div class="row" style="flex:none">
         <button class="btn ghost" id="copyAccBtn" type="button" hidden>Copy list</button>
@@ -495,8 +495,8 @@ const THEMES = {
 };
 const ALL = CRITERIA.flatMap(s => s.items.map(i => ({...i, sec:s.key})));
 const $ = id => document.getElementById(id);
-/** The code people see for a Presentation (follows the presentation order, e.g. T1-01). */
-const L = code => { const p = Presentations.find(x => x.code === code); return p ? p.label : code; };
+/** The code people see for a paper (follows the presentation order, e.g. T1-01). */
+const L = code => { const p = papers.find(x => x.code === code); return p ? p.label : code; };
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const fmt = n => n == null || !isFinite(n) ? "—" : (Math.round(n*100)/100).toFixed(2);
 const trim0 = s => s.replace(/\.00$/, "");
@@ -511,8 +511,8 @@ const GROUPS = {
   "4-5": {badge:"4–5", label:"Themes 4 & 5",      name:"Smart Technologies and Decarbonization; Policy and Governance for Carbon Neutrality", themes:["4","5"]},
 };
 const GROUP_KEYS = ["1", "2a", "2b", "3", "4-5"];
-// The ranking and the "Show" lists are per theme: Theme 2's Group A and Group B Presentations are ranked together.
-// (Groups A and B only decide which panel of evaluators scores a Presentation.)
+// The ranking and the "Show" lists are per theme: Theme 2's Group A and Group B papers are ranked together.
+// (Groups A and B only decide which panel of evaluators scores a paper.)
 const THEME_GROUPS = {
   "1":   {badge:"1",   label:"Theme 1",      name:THEMES["1"]},
   "2":   {badge:"2",   label:"Theme 2",      name:THEMES["2"]},
@@ -521,7 +521,7 @@ const THEME_GROUPS = {
 };
 const THEME_KEYS = ["1", "2", "3", "4-5"];
 const themeKeyOf = p => groupOf(p).startsWith("2") ? "2" : groupOf(p);
-const inThemeGroup = t => Presentations.filter(p => themeKeyOf(p) === t);
+const inThemeGroup = t => papers.filter(p => themeKeyOf(p) === t);
 const panelTag = p => groupOf(p) === "2a" ? "Group A" : groupOf(p) === "2b" ? "Group B" : "";
 const groupOf = p => String(p.group || "");
 const groupName = g => GROUPS[g] ? `${GROUPS[g].label}: ${GROUPS[g].name}` : (g ? `Theme ${g}` : "No theme");
@@ -552,7 +552,7 @@ function flashLater(icon, title){ store.set(FLASH_KEY, JSON.stringify({icon, tit
 function flashNow(){ let f = null; try { f = JSON.parse(store.get(FLASH_KEY) || "null"); } catch (e) {} if (f) { store.set(FLASH_KEY, ""); setTimeout(() => toast(f.icon, f.title), 300); } }
 
 // Who is logged in comes from the server (a secure login cookie), not from the address bar.
-let role = null, me = null, EV = 0, NEV = 3, Presentations = [], scores = {}, mine = {}, full = [], panel = {};
+let role = null, me = null, EV = 0, NEV = 3, papers = [], scores = {}, mine = {}, full = [], panel = {};
 
 /* ---------- logos: local file first, then mmsu.edu.ph, else hidden ---------- */
 document.querySelectorAll("img.tb-logo").forEach(img => {
@@ -584,7 +584,7 @@ function show(view){
   document.querySelectorAll("nav.tabs button").forEach(b => b.setAttribute("aria-selected", b.dataset.view === view));
   document.querySelectorAll(".view").forEach(v => v.hidden = v.id !== "view-" + view);
   if (view === "accounts") loadAccounts();
-  if (view === "Presentations") { renderPresentations(); loadDeleted(); }
+  if (view === "papers") { renderPapers(); loadDeleted(); }
 }
 document.querySelectorAll("nav.tabs button").forEach(b => b.addEventListener("click", () => show(b.dataset.view)));
 show("rank");
@@ -603,7 +603,7 @@ function setRole(r){
     buildSheet(); show("score");
   } else if (r === "admin") {
     $("userName").textContent = "Admin"; $("menuWho").textContent = "Logged in as admin";
-    $("tabs").hidden = false; $("tab-admin").hidden = false; $("tab-accounts").hidden = false; $("tab-Presentations").hidden = false;
+    $("tabs").hidden = false; $("tab-admin").hidden = false; $("tab-accounts").hidden = false; $("tab-papers").hidden = false;
     $("whoTag").hidden = false; $("whoTag").textContent = "Admin view";
   }
 }
@@ -675,15 +675,15 @@ function applyData(d){
   NEV = d.evaluators || 3;
   me = d.me || null; EV = me && me.slot ? me.slot : 0; panel = d.panel || {};
   setRole(d.role);
-  Presentations = (d.Presentations || []).slice().sort((a, b) => a.order - b.order);
+  papers = (d.papers || []).slice().sort((a, b) => a.order - b.order);
   const m = {}; (d.scores || []).forEach(s => m[`${s.code}_e${s.ev}`] = s); scores = m;
   if (d.mine) mine = d.mine;
   if (d.full) full = d.full;
   $("connStatus").className = "status";
   $("connStatus").textContent = "Updated " + new Date(d.at || Date.now()).toLocaleTimeString();
   fillThemeSelects();
-  if (role === "evaluator") { renderPresentationSelect(); renderProgress(); renderMine(); paintMailButtons(); if (firstLoad) loadSheet(); }
-  if (role === "admin") { renderAdmin(); if (!$("view-Presentations").hidden) renderPresentations(); }
+  if (role === "evaluator") { renderPaperSelect(); renderProgress(); renderMine(); paintMailButtons(); if (firstLoad) loadSheet(); }
+  if (role === "admin") { renderAdmin(); if (!$("view-papers").hidden) renderPapers(); }
   renderRanking();
   firstLoad = false;
 }
@@ -708,12 +708,12 @@ document.addEventListener("visibilitychange", () => { if (!document.hidden) load
 
 /* ---------- theme selects ---------- */
 const themeKeys = () => GROUP_KEYS;
-const inGroup = g => Presentations.filter(p => groupOf(p) === g);
+const inGroup = g => papers.filter(p => groupOf(p) === g);
 function fillThemeSelects(){
   const opts = THEME_KEYS.map(t => `<option value="${esc(t)}">${esc(THEME_GROUPS[t].label)}: ${esc(THEME_GROUPS[t].name)} (${inThemeGroup(t).length})</option>`).join("");
   const firsts = {
-    themeSel: `<option value="">All themes (${Presentations.length})</option>`,
-    rankTheme: `<option value="">All themes: overall ranking (${Presentations.length})</option>`,
+    themeSel: `<option value="">All themes (${papers.length})</option>`,
+    rankTheme: `<option value="">All themes: overall ranking (${papers.length})</option>`,
   };
   if (role === "evaluator" && me) firsts.themeSel = "";
   [["themeSel","isnc.themeSel"],["rankTheme","isnc.rankTheme"]].forEach(([id, sk]) => {
@@ -723,7 +723,7 @@ function fillThemeSelects(){
     el.value = [...el.options].some(o => o.value === cur) ? cur : el.options[0].value;
   });
 }
-const inTheme = () => { const g = $("themeSel").value || (role === "evaluator" && me ? me.group : ""); return g ? inGroup(g) : Presentations; };
+const inTheme = () => { const g = $("themeSel").value || (role === "evaluator" && me ? me.group : ""); return g ? inGroup(g) : papers; };
 
 /* ---------- score sheet (evaluators) ---------- */
 function buildSheet(){
@@ -735,11 +735,11 @@ function buildSheet(){
   $("critBody").innerHTML = rows.join("");
   ALL.forEach(i => $("c-" + i.k).addEventListener("input", recalc));
 }
-$("themeSel").addEventListener("change", () => { store.set("isnc.themeSel", $("themeSel").value); $("PresentationSel").value = ""; renderPresentationSelect(); renderProgress(); loadSheet(); });
-$("PresentationSel").addEventListener("change", () => { loadSheet(); renderProgress(); });
+$("themeSel").addEventListener("change", () => { store.set("isnc.themeSel", $("themeSel").value); $("paperSel").value = ""; renderPaperSelect(); renderProgress(); loadSheet(); });
+$("paperSel").addEventListener("change", () => { loadSheet(); renderProgress(); });
 $("clearBtn").addEventListener("click", async () => {
   const any = ALL.some(i => $("c-" + i.k).value.trim() !== "") || $("remarks").value.trim();
-  if (any && !(await ask({title: "Clear this sheet?", text: "All numbers and remarks you typed for this Presentation will be erased. Scores you already submitted are not affected.", confirm: "Clear", danger: true, icon: "warning"}))) return;
+  if (any && !(await ask({title: "Clear this sheet?", text: "All numbers and remarks you typed for this presentation will be erased. Scores you already submitted are not affected.", confirm: "Clear", danger: true, icon: "warning"}))) return;
   ALL.forEach(i => $("c-" + i.k).value = ""); $("remarks").value = ""; countRemarks(); recalc();
 });
 $("saveBtn").addEventListener("click", submit);
@@ -770,18 +770,18 @@ function recalc(){
   const {vals, valid, complete} = readSheet(), t = totals(vals);
   ["s1","s2","s3"].forEach(k => $("sub-" + k).textContent = trim0(fmt(t[k])));
   $("totalOut").textContent = trim0(fmt(t.total));
-  const ready = !!$("PresentationSel").value;
+  const ready = !!$("paperSel").value;
   $("saveBtn").disabled = saving || !(ready && complete);
-  $("saveBtn").textContent = ready && mine[$("PresentationSel").value] ? "Save changes" : "Submit score";
+  $("saveBtn").textContent = ready && mine[$("paperSel").value] ? "Save changes" : "Submit score";
   $("saveStatus").className = "status" + (valid ? "" : " bad");
   $("saveStatus").textContent = !valid ? "A score is above its maximum or below 0. Fix the red boxes." : (ready && !complete ? "Fill in every criterion to submit." : "");
 }
 
 function loadSheet(){
-  const code = $("PresentationSel").value, Presentation = Presentations.find(p => p.code === code), ex = code ? mine[code] : null;
-  $("sheetTitle").textContent = Presentation ? `${Presentation.label} · ${Presentation.title}` : "Score sheet";
-  $("sheetMeta").textContent = !Presentation ? "Choose a Presentation to score." :
-    `${Presentation.no ? `Presentation #${Presentation.no}${Presentation.session ? " · " + Presentation.session : ""} · ` : ""}${themeName(Presentation.theme)} · ${Presentation.authors || "—"}` + (ex ? ` · Saved ${when(ex.updatedAt)} with ${trim0(fmt(ex.total))} / 100. Change any box and press Save changes.` : " · Not yet scored by you.");
+  const code = $("paperSel").value, paper = papers.find(p => p.code === code), ex = code ? mine[code] : null;
+  $("sheetTitle").textContent = paper ? `${paper.label} · ${paper.title}` : "Score sheet";
+  $("sheetMeta").textContent = !paper ? "Choose a presentation to score." :
+    `${paper.no ? `Presentation #${paper.no}${paper.session ? " · " + paper.session : ""} · ` : ""}${themeName(paper.theme)} · ${paper.authors || "—"}` + (ex ? ` · Saved ${when(ex.updatedAt)} with ${trim0(fmt(ex.total))} / 100. Change any box and press Save changes.` : " · Not yet scored by you.");
   $("editTag").hidden = !ex;
   ALL.forEach(i => { $("c-" + i.k).value = ex && ex.scores && ex.scores[i.k] != null ? ex.scores[i.k] : ""; });
   $("remarks").value = ex ? (ex.remarks || "") : ""; countRemarks();
@@ -795,13 +795,13 @@ function was(prev, key){
   return `<s class="was">${trim0(fmt(v))}</s> `;
 }
 async function submit(){
-  const code = $("PresentationSel").value, {vals, complete} = readSheet();
+  const code = $("paperSel").value, {vals, complete} = readSheet();
   if (saving || !code || !complete) return;
-  const t = totals(vals), Presentation = Presentations.find(p => p.code === code), prev = mine[code];
+  const t = totals(vals), paper = papers.find(p => p.code === code), prev = mine[code];
   const ok = await ask({
     title: prev ? "Save your changes?" : "Submit this score?",
     icon: "question",
-    html: `<p class="sum-Presentation">${esc(L(code))} · ${esc(Presentation ? Presentation.title : "")}</p>
+    html: `<p class="sum-paper">${esc(L(code))} · ${esc(paper ? paper.title : "")}</p>
       <table class="sum">
         <tr><td>Research Structure</td><td>${was(prev, "s1")}${trim0(fmt(t.s1))} / 40</td></tr>
         <tr><td>Significance of Research Results</td><td>${was(prev, "s2")}${trim0(fmt(t.s2))} / 30</td></tr>
@@ -822,13 +822,13 @@ async function submit(){
     const list = inTheme(), idx = list.findIndex(x => x.code === code);
     const next = list.slice(idx + 1).concat(list.slice(0, idx)).find(x => !mine[x.code] && x.code !== code);
     saving = false;
-    renderPresentationSelect(); renderProgress(); renderMine(); renderRanking(); loadSheet();
+    renderPaperSelect(); renderProgress(); renderMine(); renderRanking(); loadSheet();
     $("saveStatus").className = "status ok";
-    $("saveStatus").textContent = `${prev ? "Changes saved" : "Submitted"}: ${fmt(t.total)} / 100 for ${L(code)}.` + (next ? ` Next unscored: ${next.label}.` : " You have scored every Presentation in this list.");
-    const mailMsg = d.emailedTo ? ` You have scored every Presentation in your group: your Excel file was emailed to ${d.emailedTo}.` : d.emailError ? ` (Your Excel file could not be emailed: ${d.emailError})` : "";
-    const done = await popup("success", prev ? "Changes saved" : "Score submitted", `${L(code)}: ${prev ? trim0(fmt(prev.total)) + " → " : ""}${trim0(fmt(t.total))} / 100.` + (next ? ` Next unscored Presentation: ${next.label}.` : d.emailedTo ? "" : " You have scored every Presentation in this list.") + mailMsg,
+    $("saveStatus").textContent = `${prev ? "Changes saved" : "Submitted"}: ${fmt(t.total)} / 100 for ${L(code)}.` + (next ? ` Next unscored: ${next.label}.` : " You have scored every presentation in this list.");
+    const mailMsg = d.emailedTo ? ` You have scored every presentation in your group: your Excel file was emailed to ${d.emailedTo}.` : d.emailError ? ` (Your Excel file could not be emailed: ${d.emailError})` : "";
+    const done = await popup("success", prev ? "Changes saved" : "Score submitted", `${L(code)}: ${prev ? trim0(fmt(prev.total)) + " → " : ""}${trim0(fmt(t.total))} / 100.` + (next ? ` Next unscored paper: ${next.label}.` : d.emailedTo ? "" : " You have scored every presentation in this list.") + mailMsg,
       next ? {showCancelButton: true, confirmButtonText: `Score ${next.label}`, cancelButtonText: "Stay here"} : {confirmButtonText: "Done"});
-    if (next && done.isConfirmed) { $("PresentationSel").value = next.code; loadSheet(); renderProgress(); window.scrollTo({top: 0, behavior: "smooth"}); }
+    if (next && done.isConfirmed) { $("paperSel").value = next.code; loadSheet(); renderProgress(); window.scrollTo({top: 0, behavior: "smooth"}); }
   } catch (e) {
     saving = false; recalc();
     $("saveStatus").className = "status bad";
@@ -840,7 +840,7 @@ async function submit(){
 /* ---------- My scores (evaluators) ---------- */
 const when = t => t ? new Date(t).toLocaleString([], {month:"short", day:"numeric", hour:"numeric", minute:"2-digit"}) : "";
 function renderMine(){
-  const rows = Presentations.filter(p => mine[p.code]);
+  const rows = papers.filter(p => mine[p.code]);
   $("mineBody").innerHTML = rows.length ? rows.map(p => `<tr>
       <td class="ccell hide-sm">${esc(p.label)}</td>
       <td><div class="pcode show-sm">${esc(p.label)}</div><div class="ptitle">${esc(p.title)}</div>${mine[p.code].remarks ? `<div class="pauth">“${esc(mine[p.code].remarks)}”</div>` : ""}</td>
@@ -848,29 +848,29 @@ function renderMine(){
       <td class="num"><b>${fmt(mine[p.code].total)}</b></td>
       <td class="hide-sm muted">${esc(when(mine[p.code].updatedAt))}</td>
       <td><button class="btn ghost small" type="button" data-edit="${esc(p.code)}">Edit</button></td></tr>`).join("")
-    : `<tr><td colspan="6" class="muted">You haven't scored any Presentations yet. Start in the "Score Presentations" tab.</td></tr>`;
+    : `<tr><td colspan="6" class="muted">You haven't scored any presentations yet. Start in the "Score presentations" tab.</td></tr>`;
   $("mineBody").querySelectorAll("[data-edit]").forEach(b => b.addEventListener("click", () => openForEdit(b.dataset.edit)));
 }
-// Opens a saved Presentation on the score sheet, ready to change
+// Opens a saved paper on the score sheet, ready to change
 function openForEdit(code){
-  const p = Presentations.find(x => x.code === code); if (!p) return;
-  renderPresentationSelect(); $("PresentationSel").value = code; loadSheet(); renderProgress(); show("score");
+  const p = papers.find(x => x.code === code); if (!p) return;
+  renderPaperSelect(); $("paperSel").value = code; loadSheet(); renderProgress(); show("score");
   $("sheet").scrollIntoView({behavior: "smooth", block: "start"});
 }
 
-function renderPresentationSelect(){
-  const sel = $("PresentationSel"), cur = sel.value, list = inTheme();
-  sel.innerHTML = list.length ? `<option value="">Choose a Presentation…</option>` + list.map(p => `<option value="${esc(p.code)}">${mine[p.code] ? "✓ " : ""}${esc(p.label)} · ${esc(p.title)}</option>`).join("") : `<option value="">No Presentations in this theme</option>`;
+function renderPaperSelect(){
+  const sel = $("paperSel"), cur = sel.value, list = inTheme();
+  sel.innerHTML = list.length ? `<option value="">Choose a presentation…</option>` + list.map(p => `<option value="${esc(p.code)}">${mine[p.code] ? "✓ " : ""}${esc(p.label)} · ${esc(p.title)}</option>`).join("") : `<option value="">No presentations in this theme</option>`;
   if (list.some(p => p.code === cur)) sel.value = cur;
 }
 
 function renderProgress(){
   const box = $("progress"), list = inTheme();
-  if (!list.length) { box.innerHTML = `<span class="note">No Presentations yet.</span>`; return; }
+  if (!list.length) { box.innerHTML = `<span class="note">No presentations yet.</span>`; return; }
   const done = list.filter(p => mine[p.code]).length;
   box.innerHTML = `<span class="pill ${done === list.length ? "done" : done ? "part" : "none"}">${done} of ${list.length} scored${$("themeSel").value ? " in this theme" : ""}</span>` +
-    list.map(p => `<button type="button" class="chip ${mine[p.code] ? "done" : ""} ${$("PresentationSel").value === p.code ? "cur" : ""}" data-p="${esc(p.code)}" title="${esc((p.no ? "Presentation #" + p.no + " · " : "") + p.title)}">${mine[p.code] ? "✓ " : ""}${esc(p.label)}</button>`).join("");
-  box.querySelectorAll(".chip").forEach(c => c.addEventListener("click", () => { $("PresentationSel").value = c.dataset.p; loadSheet(); renderProgress(); }));
+    list.map(p => `<button type="button" class="chip ${mine[p.code] ? "done" : ""} ${$("paperSel").value === p.code ? "cur" : ""}" data-p="${esc(p.code)}" title="${esc((p.no ? "Presentation #" + p.no + " · " : "") + p.title)}">${mine[p.code] ? "✓ " : ""}${esc(p.label)}</button>`).join("");
+  box.querySelectorAll(".chip").forEach(c => c.addEventListener("click", () => { $("paperSel").value = c.dataset.p; loadSheet(); renderProgress(); }));
 }
 
 /* ---------- ranking ---------- */
@@ -888,14 +888,14 @@ function computeRanking(list){
 
 function renderRanking(){
   const wrap = $("rankWrap");
-  if (!Presentations.length) { wrap.innerHTML = `<div class="empty">No Presentations yet.</div>`; return; }
+  if (!papers.length) { wrap.innerHTML = `<div class="empty">No presentations yet.</div>`; return; }
   const sel = $("rankTheme").value;
   if (sel === "") {
-    wrap.innerHTML = rankCard({badge:"All", label:`All themes · ${Presentations.length} Presentations`, name:"Overall ranking", list:Presentations, showTheme:true});
+    wrap.innerHTML = rankCard({badge:"All", label:`All themes · ${papers.length} presentations`, name:"Overall ranking", list:papers, showTheme:true});
   } else {
     wrap.innerHTML = THEME_KEYS.filter(t => t === sel).map(g => {
       const G = THEME_GROUPS[g], list = inThemeGroup(g);
-      return list.length ? rankCard({badge:G.badge, label:`${G.label} · ${list.length} Presentation${list.length > 1 ? "s" : ""}`, name:G.name, list, group:g, showTheme: new Set(list.map(p => p.theme)).size > 1}) : "";
+      return list.length ? rankCard({badge:G.badge, label:`${G.label} · ${list.length} presentation${list.length > 1 ? "s" : ""}`, name:G.name, list, group:g, showTheme: new Set(list.map(p => p.theme)).size > 1}) : "";
     }).join("");
   }
 }
@@ -927,7 +927,7 @@ function rankCard({badge, label, name, list, showTheme, group}){
       ${r.ev.map((s, i) => `<td class="evc hide-sm"><span class="ev ${s ? "" : "miss"}" title="Evaluator ${i + 1}">${s ? trim0(fmt(s.total)) : "–"}</span></td>`).join("")}
       <td class="num hide-lg">${fmt(r.s1)}</td><td class="num hide-lg">${fmt(r.s2)}</td><td class="num hide-lg">${fmt(r.s3)}</td>
       <td class="avg">${r.avg == null ? `<span class="muted">–</span>` : `<b>${fmt(r.avg)}</b><span class="of"> /100</span><div class="bar"><i style="width:${Math.max(0, Math.min(100, r.avg))}%"></i></div>`}</td>
-    </tr>`).join("") + (rows.length ? "" : `<tr><td colspan="12" class="muted">No Presentation matches “${esc(q)}”.</td></tr>`) + `</tbody></table></div></article>`;
+    </tr>`).join("") + (rows.length ? "" : `<tr><td colspan="12" class="muted">No presentation matches “${esc(q)}”.</td></tr>`) + `</tbody></table></div></article>`;
 }
 $("rankTheme").addEventListener("change", () => { store.set("isnc.rankTheme", $("rankTheme").value); renderRanking(); });
 $("rankSearch").addEventListener("input", () => renderRanking());
@@ -936,24 +936,24 @@ $("rankSearch").addEventListener("input", () => renderRanking());
 const plain = t => String(t || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 const matches = (p, q) => { const hay = plain(`${p.title} ${p.authors} ${p.label} ${p.code}`); return plain(q).split(/\s+/).filter(Boolean).every(w => hay.includes(w)); };
 function renderSearch(){
-  const q = $("PresentationSearch").value, box = $("searchResults");
+  const q = $("paperSearch").value, box = $("searchResults");
   if (!q.trim()) { box.hidden = true; box.innerHTML = ""; return; }
   const hits = inTheme().filter(p => matches(p, q));
   box.hidden = false;
   box.innerHTML = hits.length ? hits.slice(0, 8).map(p => `<button type="button" class="hit" data-p="${esc(p.code)}"><span class="hcode">${esc(p.no ? "#" + p.no : p.code)}</span>
       <span class="htitle">${esc(p.title)}<span class="def">${esc(p.authors)}</span></span>${mine[p.code] ? `<span class="pill done">Scored</span>` : ""}</button>`).join("")
       + (hits.length > 8 ? `<div class="note">${hits.length - 8} more: type more words to narrow it down.</div>` : "")
-    : `<div class="note">No Presentation in your theme group matches “${esc(q)}”.</div>`;
+    : `<div class="note">No presentation in your theme group matches “${esc(q)}”.</div>`;
   box.querySelectorAll(".hit").forEach(b => b.addEventListener("click", () => {
-    $("PresentationSel").value = b.dataset.p; $("PresentationSearch").value = ""; renderSearch(); loadSheet(); renderProgress();
+    $("paperSel").value = b.dataset.p; $("paperSearch").value = ""; renderSearch(); loadSheet(); renderProgress();
     $("sheet").scrollIntoView({behavior: "smooth", block: "start"});
   }));
 }
-$("PresentationSearch").addEventListener("input", renderSearch);
+$("paperSearch").addEventListener("input", renderSearch);
 
 /* ---------- organizer ---------- */
 function renderAdmin(){
-  const byCode = Object.fromEntries(Presentations.map(p => [p.code, p]));
+  const byCode = Object.fromEntries(papers.map(p => [p.code, p]));
   const rows = full.slice().sort((a, b) => (byCode[a.code] ? byCode[a.code].order : 1e9) - (byCode[b.code] ? byCode[b.code].order : 1e9) || a.ev - b.ev);
   $("adminBody").innerHTML = rows.length ? rows.map(s => `<tr><td><strong>${esc(byCode[s.code] ? byCode[s.code].label : s.code)}</strong> <span class="def">${esc(byCode[s.code] ? byCode[s.code].title : "")}</span></td><td class="num">${s.ev}</td><td class="num">${fmt(s.total)}</td><td>${esc(s.remarks || "")}</td><td class="muted">${s.updatedAt ? new Date(s.updatedAt).toLocaleString() : ""}${s.edits ? `<span class="def">edited ${s.edits}×</span>` : ""}</td><td><button class="btn danger small" type="button" data-del="${esc(s.code + "_e" + s.ev)}">Delete</button></td></tr>`).join("")
     : `<tr><td colspan="6" class="muted">No scores submitted yet.</td></tr>`;
@@ -973,15 +973,15 @@ async function adminAction(body, statusEl, okMsg){
   } catch (e) { statusEl.className = "status bad"; statusEl.textContent = e.message; popup("error", "Something went wrong", e.message); }
 }
 
-/* ---------- Presentations (admin) ---------- */
+/* ---------- Papers (admin) ---------- */
 const scoredCount = p => Array.from({length: NEV}, (_, i) => scores[`${p.code}_e${i + 1}`]).filter(Boolean).length;
-function renderPresentations(){
+function renderPapers(){
   if (role !== "admin") return;
   const f = $("pgFilter"), cur = f.value || "";
-  f.innerHTML = `<option value="">All Presentations (${Presentations.length})</option>` + THEME_KEYS.map(t => `<option value="${t}">${esc(THEME_GROUPS[t].label)} (${inThemeGroup(t).length})</option>`).join("");
+  f.innerHTML = `<option value="">All presentations (${papers.length})</option>` + THEME_KEYS.map(t => `<option value="${t}">${esc(THEME_GROUPS[t].label)} (${inThemeGroup(t).length})</option>`).join("");
   f.value = [...f.options].some(o => o.value === cur) ? cur : "";
   $("pgCounts").textContent = THEME_KEYS.map(t => `${THEME_GROUPS[t].label}: ${inThemeGroup(t).length}` + (t === "2" ? ` (Group A ${inGroup("2a").length} · Group B ${inGroup("2b").length})` : "")).join(" · ");
-  const q = $("pgSearch").value, list = Presentations.filter(p => (!f.value || themeKeyOf(p) === f.value) && (!q.trim() || matches(p, q)));
+  const q = $("pgSearch").value, list = papers.filter(p => (!f.value || themeKeyOf(p) === f.value) && (!q.trim() || matches(p, q)));
   $("pgBody").innerHTML = list.length ? list.map(p => {
     const n = scoredCount(p), g = groupOf(p);
     const panel = p.theme === "2"
@@ -989,32 +989,32 @@ function renderPresentations(){
       : `${esc(GROUPS[g] ? GROUPS[g].label : g)}${p.theme === "4" || p.theme === "5" ? ` <span class="def">Theme ${esc(p.theme)}</span>` : ""}`;
     return `<tr><td class="ccell">${esc(p.label)}</td><td><div class="ptitle">${p.no ? `<span class="pcode">#${p.no}</span> ` : ""}${esc(p.title)}</div><div class="pauth">${esc(p.authors)}</div>${p.session ? `<div class="def">${esc(p.session)}</div>` : ""}</td>
       <td>${panel}</td><td class="num hide-sm">${n}/${NEV}</td>
-      <td><button class="btn danger small" type="button" data-del-Presentation="${esc(p.code)}">Delete</button></td></tr>`;
-  }).join("") : `<tr><td colspan="5" class="muted">No Presentations match.</td></tr>`;
+      <td><button class="btn danger small" type="button" data-del-paper="${esc(p.code)}">Delete</button></td></tr>`;
+  }).join("") : `<tr><td colspan="5" class="muted">No presentations match.</td></tr>`;
   $("pgBody").querySelectorAll("[data-move]").forEach(sel => sel.addEventListener("change", async () => {
-    const p = Presentations.find(x => x.code === sel.dataset.move), n = scoredCount(p), to = GROUPS[sel.value].label;
-    if (n && !(await ask({title: `Move ${p.label} to ${to}?`, text: `${p.label} already has ${n} score${n > 1 ? "s" : ""}. They'll count as ${to}'s evaluators' scores.`, confirm: "Move", icon: "warning"}))) { renderPresentations(); return; }
-    try { await post("/api/admin", {action: "move-Presentation", code: p.code, group: sel.value}); p.group = sel.value; toast("success", `${p.label} → ${to}`); renderPresentations(); load(); }
-    catch (e) { popup("error", "Not moved", e.message); renderPresentations(); }
+    const p = papers.find(x => x.code === sel.dataset.move), n = scoredCount(p), to = GROUPS[sel.value].label;
+    if (n && !(await ask({title: `Move ${p.label} to ${to}?`, text: `${p.label} already has ${n} score${n > 1 ? "s" : ""}. They'll count as ${to}'s evaluators' scores.`, confirm: "Move", icon: "warning"}))) { renderPapers(); return; }
+    try { await post("/api/admin", {action: "move-paper", code: p.code, group: sel.value}); p.group = sel.value; toast("success", `${p.label} → ${to}`); renderPapers(); load(); }
+    catch (e) { popup("error", "Not moved", e.message); renderPapers(); }
   }));
-  $("pgBody").querySelectorAll("[data-del-Presentation]").forEach(b => b.addEventListener("click", async () => {
-    await load(); // fresh scores, so a Presentation scored a moment ago isn't offered for deletion
-    const p = Presentations.find(x => x.code === b.dataset.delPresentation), n = p ? scoredCount(p) : 0;
-    if (!p) return renderPresentations();
-    if (n) return popup("info", `${p.label} has ${n} score${n > 1 ? "s" : ""}`, "Delete its scores first (Admin tab → All submitted scores), then delete the Presentation.");
+  $("pgBody").querySelectorAll("[data-del-paper]").forEach(b => b.addEventListener("click", async () => {
+    await load(); // fresh scores, so a paper scored a moment ago isn't offered for deletion
+    const p = papers.find(x => x.code === b.dataset.delPaper), n = p ? scoredCount(p) : 0;
+    if (!p) return renderPapers();
+    if (n) return popup("info", `${p.label} has ${n} score${n > 1 ? "s" : ""}`, "Delete its scores first (Admin tab → All submitted scores), then delete the presentation.");
     if (!(await ask({title: `Delete ${p.label}?`, text: `"${p.title}" will be removed from the evaluators' lists and the ranking. You can restore it later.`, confirm: "Delete", danger: true, icon: "warning"}))) return;
-    try { await post("/api/admin", {action: "delete-Presentation", code: p.code}); toast("success", `${p.label} deleted`); await load(); renderPresentations(); loadDeleted(); }
+    try { await post("/api/admin", {action: "delete-paper", code: p.code}); toast("success", `${p.label} deleted`); await load(); renderPapers(); loadDeleted(); }
     catch (e) { popup("error", "Not deleted", e.message); }
   }));
 }
 async function loadDeleted(){
   try {
-    const list = (await post("/api/admin", {action: "deleted-Presentations"})).Presentations;
+    const list = (await post("/api/admin", {action: "deleted-papers"})).papers;
     $("delPanel").hidden = !list.length;
     $("delBody").innerHTML = list.map(p => `<tr><td class="ccell">—</td><td><div class="ptitle">${esc(p.title)}</div><div class="pauth">${esc(p.authors)}</div></td>
       <td><button class="btn ghost small" type="button" data-restore="${esc(p.code)}">Restore</button></td></tr>`).join("");
     $("delBody").querySelectorAll("[data-restore]").forEach(b => b.addEventListener("click", async () => {
-      try { await post("/api/admin", {action: "restore-Presentation", code: b.dataset.restore}); toast("success", `${b.dataset.restore} restored`); await load(); renderPresentations(); loadDeleted(); }
+      try { await post("/api/admin", {action: "restore-paper", code: b.dataset.restore}); toast("success", `${b.dataset.restore} restored`); await load(); renderPapers(); loadDeleted(); }
       catch (e) { popup("error", "Not restored", e.message); }
     }));
   } catch (e) {}
@@ -1023,16 +1023,16 @@ const npGroupShown = () => { $("npGroupWrap").hidden = $("npTheme").value !== "2
 $("npTheme").addEventListener("change", npGroupShown); npGroupShown();
 $("npAdd").addEventListener("click", async () => {
   const theme = $("npTheme").value, title = $("npTitle").value.trim();
-  if (!title) return popup("warning", "Enter the title", "Type the Presentation's title first.");
+  if (!title) return popup("warning", "Enter the title", "Type the presentation's title first.");
   try {
-    const d = await post("/api/admin", {action: "add-Presentation", theme, group: theme === "2" ? $("npGroup").value : "", no: $("npNo").value, session: $("npSession").value, title, authors: $("npAuthors").value});
+    const d = await post("/api/admin", {action: "add-paper", theme, group: theme === "2" ? $("npGroup").value : "", no: $("npNo").value, session: $("npSession").value, title, authors: $("npAuthors").value});
     ["npTitle", "npAuthors", "npNo"].forEach(id => $(id).value = "");
-    await load(); renderPresentations();
-    popup("success", `Added as ${L(d.Presentation.code)}`, `${d.Presentation.title}, in ${GROUPS[Presentations.find(p => p.code === d.Presentation.code).group].label}.`);
+    await load(); renderPapers();
+    popup("success", `Added as ${L(d.paper.code)}`, `${d.paper.title}, in ${GROUPS[papers.find(p => p.code === d.paper.code).group].label}.`);
   } catch (e) { popup("error", "Not added", e.message); }
 });
-$("pgFilter").addEventListener("change", renderPresentations);
-$("pgSearch").addEventListener("input", renderPresentations);
+$("pgFilter").addEventListener("change", renderPapers);
+$("pgSearch").addEventListener("input", renderPapers);
 /* ---------- Accounts (admin) ---------- */
 const ago = t => t ? new Date(t).toLocaleString([], {month:"short", day:"numeric", hour:"numeric", minute:"2-digit"}) : "never";
 let accounts = [];
@@ -1048,7 +1048,7 @@ function renderAccounts(){
   $("createAccBtn").hidden = !missing; $("copyAccBtn").hidden = missing === accounts.length;
   $("createAccBtn").textContent = missing === accounts.length ? `Create the ${missing} accounts` : `Create the ${missing} missing account${missing > 1 ? "s" : ""}`;
   $("accBody").innerHTML = accounts.map(a => {
-    const scored = Presentations.filter(p => groupOf(p) === a.group && scores[`${p.code}_e${a.slot}`]).length, total = Presentations.filter(p => groupOf(p) === a.group).length;
+    const scored = papers.filter(p => groupOf(p) === a.group && scores[`${p.code}_e${a.slot}`]).length, total = papers.filter(p => groupOf(p) === a.group).length;
     return `<tr class="${a.active === false ? "off" : ""}">
       <td><span class="uname">${esc(a.username)}</span></td>
       <td><span class="pwcell">${a.missing ? "" : esc(a.password)}</span></td>
@@ -1097,7 +1097,7 @@ async function accountAction(act, a){
 $("resetBtn").addEventListener("click", async () => {
   const ok = await ask({
     title: "Delete ALL scores?",
-    text: `Every evaluator's scores for all ${Presentations.length} Presentations will be erased and the ranking will be empty. This cannot be undone.`,
+    text: `Every evaluator's scores for all ${papers.length} presentations will be erased and the ranking will be empty. This cannot be undone.`,
     icon: "warning", confirm: "Delete all scores", danger: true,
   });
   if (ok) await adminAction({action:"clear-scores"}, $("resetStatus"), "All scores deleted.");
@@ -1128,7 +1128,7 @@ function paintMailButtons(){
   if (!me || role !== "evaluator") return;
   $("myMailBtn").hidden = !me.email;
   $("mailNote").textContent = me.email
-    ? `When you finish all your Presentations, your Excel file is emailed to ${me.email} automatically.`
+    ? `When you finish all your papers, your Excel file is emailed to ${me.email} automatically.`
     : "No email address is saved for your account, so use Download. (The admin can add your email.)";
 }
 
