@@ -8,13 +8,13 @@ Online score sheet and live ranking for the oral presentations of the 2026 Inter
 
 ## Panels and accounts (15, one per panel seat)
 
-| Panel | Presentations | Accounts | Evaluators |
+| Panel | Presentations | Evaluator Accounts | 
 |---|---|---|---|
-| Theme 1 | T1-01 – T1-15 | `t1-e1`, `t1-e2`, `t1-e3` | Anas, Rosales, Antonio |
-| Theme 2 · Track 2A | T2-01 – T2-09 (Day 2) and T2-18 – T2-26 (Day 3) | `t2-e1`, `t2-e2`, `t2-e3` | Ancheta, Lagura, Daguio (no email) |
-| Theme 2 · Track 2B | T2-10 – T2-17 (Day 2) and T2-27 – T2-34 (Day 3) | `t2b-e1`, `t2b-e2`, `t2b-e3` | Franco, Rahon, Lim |
-| Theme 3 | T3-01 – T3-10 | `t3-e1`, `t3-e2`, `t3-e3` | Valentin, Mateo, Ubiña |
-| Track 4 (Themes 4 & 5) | T4-01 – T4-07 | `t45-e1`, `t45-e2`, `t45-e3` | Valentin, Simon, Jimenez |
+| Theme 1 | T1-01 – T1-15 | `t1-e1`, `t1-e2`, `t1-e3` | 
+| Theme 2 · Track 2A | T2-01 – T2-09 (Day 2) and T2-18 – T2-26 (Day 3) | `t2-e1`, `t2-e2`, `t2-e3` | 
+| Theme 2 · Track 2B | T2-10 – T2-17 (Day 2) and T2-27 – T2-34 (Day 3) | `t2b-e1`, `t2b-e2`, `t2b-e3` | 
+| Theme 3 | T3-01 – T3-10 | `t3-e1`, `t3-e2`, `t3-e3` |
+| Track 4 (Themes 4 & 5) | T4-01 – T4-07 | `t45-e1`, `t45-e2`, `t45-e3` | 
 
 - Passwords: Admin → **Accounts** tab (shown there, with **Copy list**). Capital letters and spaces don't matter when typing them.
 - Names and emails come from `lib/accounts.js` when the accounts are created; change them in Accounts → **Edit**.
