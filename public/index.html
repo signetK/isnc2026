@@ -4,8 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>ISNC 2026 Evaluation</title>
-<link rel="icon" type="image/png" href="logos/favicon.png?v=2">
-<link rel="apple-touch-icon" href="logos/apple-touch-icon.png">
+<link rel="icon" href="/favicon.ico?v=3" sizes="any">
+<link rel="icon" type="image/png" href="/logos/favicon.png?v=3">
+<link rel="apple-touch-icon" href="/logos/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&family=Open+Sans:wght@400;600;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
 <style>
@@ -87,6 +88,19 @@ main .wrap{padding-block:24px 48px;display:flex;flex-direction:column;gap:20px}
 .view{display:flex;flex-direction:column;gap:20px}
 h2{font-family:var(--display);font-size:22px;margin:0;text-wrap:balance}
 h3{font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0}
+.modal-back{position:fixed;inset:0;z-index:50;background:rgba(10,24,30,.55);display:flex;align-items:center;justify-content:center;padding:16px;animation:fadeIn .15s ease-out}
+.modal{width:100%;max-width:420px;position:relative;box-shadow:0 18px 50px rgba(0,0,0,.35);border-top:4px solid var(--lime);animation:popIn .18s ease-out}
+.modal h2{margin:0 0 4px;padding-right:28px}
+.modal-form{display:flex;flex-direction:column;gap:12px}
+.modal-form .field{flex:none}
+.modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:4px}
+.modal-actions .btn{min-width:96px}
+.modal-x{position:absolute;top:8px;right:8px;width:34px;height:34px;border:0;border-radius:50%;background:transparent;color:var(--muted);font-size:24px;line-height:1;cursor:pointer}
+.panel.modal{border-top:4px solid var(--lime)}
+.modal-x:hover{background:var(--bg);color:var(--fg)}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes popIn{from{opacity:0;transform:translateY(8px) scale(.98)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.modal-back,.modal{animation:none}}
 .panel{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:18px;display:flex;flex-direction:column;gap:14px;min-width:0}
 .row{display:flex;gap:12px;flex-wrap:wrap;align-items:end}
 .field{display:flex;flex-direction:column;gap:4px;min-width:0;flex:1 1 200px}
@@ -235,7 +249,7 @@ textarea#remarks:focus-visible{outline:3px solid var(--focus);outline-offset:2px
       <img id="logoSdg" class="tb-logo" alt="Sustainable Development Goals wheel" data-src="logos/SDG.png" hidden>
       <div class="tb-text">
         <div class="tb-uni">2026 International</div>
-        <div class="tb-sys"><span class="lime">Sustainability <br> Nexus</span> <span class="lt">Conference</span></div>
+        <div class="tb-sys"><span class="lime">Sustainability <br>Nexus</span> <span class="lt">Conference</span></div>
       </div>
     </div>
   </div>
@@ -275,26 +289,30 @@ textarea#remarks:focus-visible{outline:3px solid var(--focus);outline-offset:2px
 <main>
 <div class="wrap">
 
-<section class="panel" id="loginPanel" hidden aria-labelledby="loginTitle">
-  <div>
-    <h2 id="loginTitle">Log in</h2>
-    <p class="note">Evaluators: use the username and password the organizer gave you (username looks like <b>t2-e1</b>: Theme 2, Evaluator 1). Admin: username <b>admin</b>.</p>
-  </div>
-  <form id="loginForm" class="row">
-    <div class="field" style="flex:1 1 180px">
-      <label for="loginUser">Username</label>
-      <input type="text" id="loginUser" autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="e.g. t2-e1" required>
+<!-- Log in: a pop-up window over the page -->
+<div class="modal-back" id="loginPanel" hidden>
+  <section class="panel modal" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
+    <button type="button" class="modal-x" id="loginClose" aria-label="Close">&times;</button>
+    <div>
+      <h2 id="loginTitle">Log in</h2>
+      <p class="note">Evaluators: use the username and password the organizer gave you (username looks like <b>t2-e1</b>: Theme 2, Evaluator 1). Admin: username <b>admin</b>.</p>
     </div>
-    <div class="field" style="flex:1 1 200px">
-      <label for="loginPass">Password</label>
-      <input type="password" id="loginPass" autocomplete="current-password" required>
-    </div>
-    <div class="row" style="flex:none;align-items:center">
-      <button type="button" class="btn ghost" id="loginCancel">Cancel</button>
-      <button type="submit" class="btn" id="loginGo">Log in</button>
-    </div>
-  </form>
-</section>
+    <form id="loginForm" class="modal-form">
+      <div class="field">
+        <label for="loginUser">Username</label>
+        <input type="text" id="loginUser" autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="e.g. t2-e1" required>
+      </div>
+      <div class="field">
+        <label for="loginPass">Password</label>
+        <input type="password" id="loginPass" autocomplete="current-password" required>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn ghost" id="loginCancel">Cancel</button>
+        <button type="submit" class="btn" id="loginGo">Log in</button>
+      </div>
+    </form>
+  </section>
+</div>
 <p class="status" id="connStatus">Loading…</p>
 
 <!-- SCORE VIEW (evaluators) -->
@@ -614,8 +632,13 @@ function setRole(r){
 }
 
 /* ---------- log in / log out ---------- */
-$("loginBtn").addEventListener("click", () => { $("loginPanel").hidden = false; $("loginUser").focus(); });
-$("loginCancel").addEventListener("click", () => { $("loginPanel").hidden = true; });
+function openLogin(){ $("loginPanel").hidden = false; document.body.style.overflow = "hidden"; setTimeout(() => $("loginUser").focus(), 30); }
+function closeLogin(){ $("loginPanel").hidden = true; document.body.style.overflow = ""; $("loginBtn").focus(); }
+$("loginBtn").addEventListener("click", openLogin);
+$("loginCancel").addEventListener("click", closeLogin);
+$("loginClose").addEventListener("click", closeLogin);
+$("loginPanel").addEventListener("mousedown", e => { if (e.target === $("loginPanel")) closeLogin(); }); // click outside the box
+document.addEventListener("keydown", e => { if (e.key === "Escape" && !$("loginPanel").hidden && !(window.Swal && Swal.isVisible())) closeLogin(); });
 // user menu (top right): opens on click, closes on outside click or Escape
 
 function setMenu(open){ $("userDrop").hidden = !open; $("userBtn").setAttribute("aria-expanded", open); }
