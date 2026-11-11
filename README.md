@@ -9,7 +9,7 @@ Online score sheet and live ranking for the oral presentations of the 2026 Inter
 ## Panels and accounts (15, one per panel seat)
 
 | Panel | Presentations | Evaluator Accounts | 
-|---|---|---|---|
+|---|---|---|
 | Theme 1 | T1-01 – T1-15 | `t1-e1`, `t1-e2`, `t1-e3` | 
 | Theme 2 · Track 2A | T2-01 – T2-09 (Day 2) and T2-18 – T2-26 (Day 3) | `t2-e1`, `t2-e2`, `t2-e3` | 
 | Theme 2 · Track 2B | T2-10 – T2-17 (Day 2) and T2-27 – T2-34 (Day 3) | `t2b-e1`, `t2b-e2`, `t2b-e3` | 
