@@ -7,6 +7,7 @@ import { currentUser, send } from '../lib/accounts.js';
 import { buildReport } from '../lib/report.js';
 import { getPapers } from '../lib/catalog.js';
 import { emailReport, panelNames } from '../lib/deliver.js';
+import { allEncoded } from '../lib/encoded.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return send(res, 405, { error: 'Use POST.' });
@@ -16,7 +17,7 @@ export default async function handler(req, res) {
     const b = body(req);
     if (b.action === 'xlsx') {
       const scores = await allScores();
-      const { buffer, filename } = buildReport({ viewer: me, scores, papers: await getPapers(), names: me.role === 'admin' ? await panelNames() : {} });
+      const { buffer, filename } = buildReport({ viewer: me, scores, papers: await getPapers(), names: me.role === 'admin' ? await panelNames() : {}, encoded: await allEncoded() });
       return send(res, 200, { filename, base64: buffer.toString('base64') });
     }
     if (b.action === 'email') {
