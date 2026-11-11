@@ -441,7 +441,7 @@ textarea#remarks:focus-visible{outline:3px solid var(--focus);outline-offset:2px
     </div>
     <div class="row">
       <div class="field" style="flex:0 1 130px"><label for="npTheme">Theme</label>
-        <select id="npTheme"><option value="1">Theme 1</option><option value="2">Theme 2</option><option value="3">Theme 3</option><option value="4">Theme 4</option><option value="5">Theme 5</option></select></div>
+        <select id="npTheme"><option value="1">Theme 1</option><option value="2">Theme 2</option><option value="3">Theme 3</option><option value="4">Track 4</option></select></div>
       <div class="field" style="flex:0 1 130px" id="npGroupWrap"><label for="npGroup">Track</label>
         <select id="npGroup"><option value="2a">Track 2A</option><option value="2b">Track 2B</option></select></div>
       <div class="field" style="flex:0 1 100px"><label for="npNo">Presentation #</label><input type="number" id="npNo" min="1" max="999" inputmode="numeric"></div>
@@ -481,7 +481,7 @@ textarea#remarks:focus-visible{outline:3px solid var(--focus);outline-offset:2px
     <div class="row" style="justify-content:space-between;align-items:center">
       <div>
         <h2>Evaluator accounts</h2>
-        <p class="note">One account per panel seat: 3 evaluators for each of the 5 panels (Theme 1, Theme 2 Track 2A, Theme 2 Track 2B, Theme 3, Themes 4 &amp; 5). Give each evaluator their username and password privately. Each evaluator can only score their own panel's papers. Evaluators with no email use Download.</p>
+        <p class="note">One account per panel seat: 3 evaluators for each of the 5 panels (Theme 1, Theme 2 Track 2A, Theme 2 Track 2B, Theme 3, Track 4). Give each evaluator their username and password privately. Each evaluator can only score their own panel's papers. Evaluators with no email use Download.</p>
       </div>
       <div class="row" style="flex:none">
         <button class="btn ghost" id="copyAccBtn" type="button" hidden>Copy list</button>
@@ -569,14 +569,15 @@ const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt
 const fmt = n => n == null || !isFinite(n) ? "—" : (Math.round(n*100)/100).toFixed(2);
 const trim0 = s => s.replace(/\.00$/, "");
 const store = { get(k){try{return localStorage.getItem(k)}catch(e){return null}}, set(k,v){try{localStorage.setItem(k,v)}catch(e){}} };
-const themeName = t => THEMES[t] ? `Theme ${t}: ${THEMES[t]}` : (t ? `Theme ${t}` : "No theme");
-// Ranking groups = panels. Theme 2 is split into Group A and Group B; Themes 4 and 5 are one group.
+const themeTag = t => (t === "4" || t === "5") ? "Track 4" : `Theme ${t}`;  // Themes 4 and 5 are one panel: Track 4
+const themeName = t => (t === "4" || t === "5") ? `Track 4: Policy and Governance for Carbon Neutrality / Smart Technologies and Decarbonization` : THEMES[t] ? `Theme ${t}: ${THEMES[t]}` : (t ? `Theme ${t}` : "No theme");
+// Ranking groups = panels. Theme 2 is split into Track 2A and Track 2B; Themes 4 and 5 are one panel, Track 4.
 const GROUPS = {
   "1":   {badge:"1",   label:"Theme 1",           name:THEMES["1"], themes:["1"]},
   "2a":  {badge:"2A",  label:"Theme 2 · Track 2A", name:THEMES["2"], themes:["2"]},
   "2b":  {badge:"2B",  label:"Theme 2 · Track 2B", name:THEMES["2"], themes:["2"]},
   "3":   {badge:"3",   label:"Theme 3",           name:THEMES["3"], themes:["3"]},
-  "4-5": {badge:"4–5", label:"Themes 4 & 5",      name:"Smart Technologies and Decarbonization; Policy and Governance for Carbon Neutrality", themes:["4","5"]},
+  "4-5": {badge:"4", label:"Track 4",      name:"Policy and Governance for Carbon Neutrality / Smart Technologies and Decarbonization", themes:["4","5"]},
 };
 const GROUP_KEYS = ["1", "2a", "2b", "3", "4-5"];
 // The ranking and the "Show" lists are per theme: Theme 2's Group A and Group B papers are ranked together.
@@ -585,7 +586,7 @@ const THEME_GROUPS = {
   "1":   {badge:"1",   label:"Theme 1",      name:THEMES["1"]},
   "2":   {badge:"2",   label:"Theme 2",      name:THEMES["2"]},
   "3":   {badge:"3",   label:"Theme 3",      name:THEMES["3"]},
-  "4-5": {badge:"4–5", label:"Themes 4 & 5", name:"Smart Technologies and Decarbonization; Policy and Governance for Carbon Neutrality"},
+  "4-5": {badge:"4", label:"Track 4", name:"Policy and Governance for Carbon Neutrality / Smart Technologies and Decarbonization"},
 };
 const THEME_KEYS = ["1", "2", "3", "4-5"];
 const themeKeyOf = p => groupOf(p).startsWith("2") ? "2" : groupOf(p);
@@ -725,7 +726,7 @@ $("pwBtn").addEventListener("click", async () => {
 
 /* ---------- encode remarks (admin): Evaluators 1, 2 and 3 for one presentation ---------- */
 // Each box saves on its own; saving again replaces it and an empty box removes it.
-const ENC_SHORT = {"1": "T1", "2a": "T2A", "2b": "T2B", "3": "T3", "4-5": "T45"};
+const ENC_SHORT = {"1": "T1", "2a": "T2A", "2b": "T2B", "3": "T3", "4-5": "T4"};
 let encGroup = GROUP_KEYS.includes(store.get("isnc.encPanel")) ? store.get("isnc.encPanel") : GROUP_KEYS[0], encCode = "";
 const encDirty = {};   // n -> true while a box has unsaved typing
 const encId = (code, n) => `${code}_e${n}`;
@@ -1094,9 +1095,9 @@ function rankCard({badge, label, name, list, showTheme, group}){
     rows.map(r => `<tr class="${r.rank === 1 ? "r1" : ""}">
       <td>${medal(r.rank)}</td>
       <td class="ccell hide-sm">${esc(r.p.label)}</td>
-      ${showTheme ? `<td class="hide-md"><span class="ttag" title="${esc(themeName(r.p.theme))}">Theme ${esc(r.p.theme)}</span></td>` : ""}
-      <td class="pcell"><div class="pcode show-sm">${esc(r.p.label)}${showTheme ? ` · Theme ${esc(r.p.theme)}` : ""}</div><div class="ptitle">${esc(r.p.title)}</div>
-        <div class="pauth">${esc(r.p.authors)}${showTheme ? `<span class="show-md">Theme ${esc(r.p.theme)}</span>` : ""}</div>
+      ${showTheme ? `<td class="hide-md"><span class="ttag" title="${esc(themeName(r.p.theme))}">${esc(themeTag(r.p.theme))}</span></td>` : ""}
+      <td class="pcell"><div class="pcode show-sm">${esc(r.p.label)}${showTheme ? ` · ${esc(themeTag(r.p.theme))}` : ""}</div><div class="ptitle">${esc(r.p.title)}</div>
+        <div class="pauth">${esc(r.p.authors)}${showTheme ? `<span class="show-md">${esc(themeTag(r.p.theme))}</span>` : ""}</div>
         <div class="evline show-sm">${r.ev.map((s, i) => `E${i + 1} ${s ? trim0(fmt(s.total)) : "–"}`).join(" · ")}</div>
         <div class="pstat">${panelTag(r.p) ? `<span class="ttag">${panelTag(r.p)}</span> ` : ""}<span class="pill ${r.n === NEV ? "done" : r.n ? "part" : "none"}">${r.n === NEV ? "Complete" : r.n + " of " + NEV + " scored"}</span></div></td>
       ${r.ev.map((s, i) => `<td class="evc hide-sm"><span class="ev ${s ? "" : "miss"}" title="Evaluator ${i + 1}">${s ? trim0(fmt(s.total)) : "–"}</span></td>`).join("")}
@@ -1161,7 +1162,7 @@ function renderPapers(){
     const n = scoredCount(p), g = groupOf(p);
     const panel = p.theme === "2"
       ? `<select data-move="${esc(p.code)}" aria-label="Group for ${esc(p.label)}"><option value="2a" ${g === "2a" ? "selected" : ""}>Track 2A</option><option value="2b" ${g === "2b" ? "selected" : ""}>Track 2B</option></select>`
-      : `${esc(GROUPS[g] ? GROUPS[g].label : g)}${p.theme === "4" || p.theme === "5" ? ` <span class="def">Theme ${esc(p.theme)}</span>` : ""}`;
+      : `${esc(GROUPS[g] ? GROUPS[g].label : g)}`;
     return `<tr><td class="ccell">${esc(p.label)}</td><td><div class="ptitle">${p.no ? `<span class="pcode">#${p.no}</span> ` : ""}${esc(p.title)}</div><div class="pauth">${esc(p.authors)}</div>${p.session ? `<div class="def">${esc(p.session)}</div>` : ""}</td>
       <td>${panel}</td><td class="num hide-sm">${n}/${NEV}</td>
       <td><button class="btn danger small" type="button" data-del-paper="${esc(p.code)}">Delete</button></td></tr>`;
