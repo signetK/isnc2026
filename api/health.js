@@ -14,6 +14,7 @@ export default async function handler(req, res) {
   await load('lib/xlsx.js', () => import('../lib/xlsx.js'));
   await load('lib/report.js', () => import('../lib/report.js'));
   await load('lib/mail.js', () => import('../lib/mail.js'));
+  await load('lib/encoded.js', () => import('../lib/encoded.js'));
   await load('lib/deliver.js', () => import('../lib/deliver.js'));
   await load('api/data.js', () => import('./data.js'));
   await load('api/score.js', () => import('./score.js'));
