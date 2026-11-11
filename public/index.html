@@ -101,6 +101,31 @@ h3{font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
 @keyframes popIn{from{opacity:0;transform:translateY(8px) scale(.98)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion:reduce){.modal-back,.modal{animation:none}}
+.encbar{gap:8px;padding:12px 14px}
+.encrow{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.segs{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;flex:none}
+.segs button{font:inherit;font-weight:600;font-size:14px;border:0;border-right:1px solid var(--line);background:var(--surface);color:var(--muted);padding:7px 13px;cursor:pointer}
+.segs button:last-child{border-right:0}
+.segs button[aria-pressed="true"]{background:var(--green);color:#fff}
+#encPaper{flex:1 1 280px;min-width:0}
+.encnav{display:flex;align-items:center;gap:6px;flex:none}
+.enchead{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;font-size:15px;line-height:1.35}
+.enchead b{font-family:var(--display)}
+.encslots{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+@media (max-width:900px){.encslots{grid-template-columns:1fr}}
+.encslot{border:1px solid var(--line);border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:6px;background:var(--surface)}
+.encslot.dirty{border-color:var(--warn)}
+.encslot h4{margin:0;font-size:14px;display:flex;gap:6px;align-items:baseline;flex-wrap:wrap}
+.encslot h4 .def{display:inline;font-weight:400}
+.encslot textarea{width:100%;height:max(240px,calc(100vh - 430px));resize:vertical;font:inherit;font-size:16px;line-height:1.5;padding:10px 12px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--fg)}
+.encslot textarea:focus-visible{outline:3px solid var(--focus);outline-offset:1px}
+.encslot .own{font-size:12.5px;color:var(--muted);border-left:3px solid var(--line);padding-left:8px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.encslot .foot{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.encslot .st{font-size:12.5px;color:var(--muted)}
+.encslot.dirty .st{color:var(--warn);font-weight:600}
+.encslot .count{font-family:var(--mono);font-size:12px;color:var(--muted)}
+.encnote{margin-top:8px;font-size:13.5px;border-left:3px solid var(--lime);background:var(--rowtint);padding:8px 10px;border-radius:0 6px 6px 0}
+.encnote .def{display:block}
 .panel{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:18px;display:flex;flex-direction:column;gap:14px;min-width:0}
 .row{display:flex;gap:12px;flex-wrap:wrap;align-items:end}
 .field{display:flex;flex-direction:column;gap:4px;min-width:0;flex:1 1 200px}
@@ -281,6 +306,7 @@ textarea#remarks:focus-visible{outline:3px solid var(--focus);outline-offset:2px
       <button role="tab" id="tab-admin" aria-selected="false" data-view="admin" hidden>Admin</button>
       <button role="tab" id="tab-accounts" aria-selected="false" data-view="accounts" hidden>Accounts</button>
       <button role="tab" id="tab-papers" aria-selected="false" data-view="papers" hidden>Presentations</button>
+      <button role="tab" id="tab-encode" aria-selected="false" data-view="encode" hidden>Encode remarks</button>
     </nav>
     <div class="pad" id="tabsPad"></div>
   </div>
@@ -354,6 +380,7 @@ textarea#remarks:focus-visible{outline:3px solid var(--focus);outline-offset:2px
     <div class="field" style="flex:none">
       <div class="remarksHead"><label for="remarks">Remarks (optional; the admin and the other evaluators in your theme group can see these)</label><span class="count" id="remarksCount">0 / 400</span></div>
       <textarea id="remarks" rows="5" maxlength="400" placeholder="Comments for the presentation: strengths, weaknesses, suggestions…"></textarea>
+      <div class="encnote" id="encodedNote" hidden></div>
     </div>
     <div class="totalbar">
       <div><span class="muted">Total</span> <span class="big" id="totalOut">0</span><span class="muted"> / 100</span></div>
@@ -463,6 +490,24 @@ textarea#remarks:focus-visible{outline:3px solid var(--focus);outline-offset:2px
     </div>
     <div class="scroll"><table class="list"><thead><tr><th>Username</th><th>Password</th><th>Seat</th><th>Evaluator's name and email</th><th class="num hide-sm">Scored</th><th class="hide-sm">Last login</th><th></th></tr></thead><tbody id="accBody"></tbody></table></div>
   </div>
+</section>
+
+<!-- ENCODE REMARKS (admin): facilitators type the remarks of Evaluators 1, 2 and 3 for a presentation -->
+<section id="view-encode" class="view" hidden>
+  <div class="panel encbar">
+    <div class="encrow">
+      <div class="segs" id="encPanels" role="group" aria-label="Panel"></div>
+      <label class="sr-only" for="encPaper">Presentation</label>
+      <select id="encPaper"></select>
+      <div class="encnav">
+        <button class="btn ghost small" id="encPrev" type="button" aria-label="Previous presentation">‹ Prev</button>
+        <span class="note" id="encPos"></span>
+        <button class="btn ghost small" id="encNext" type="button" aria-label="Next presentation">Next ›</button>
+      </div>
+    </div>
+    <div class="enchead"><b id="encTitle">Choose a presentation</b><span class="note" id="encMeta"></span></div>
+  </div>
+  <div class="encslots" id="encSlots"></div>
 </section>
 
 <section id="view-admin" class="view" hidden>
@@ -575,7 +620,7 @@ function flashLater(icon, title){ store.set(FLASH_KEY, JSON.stringify({icon, tit
 function flashNow(){ let f = null; try { f = JSON.parse(store.get(FLASH_KEY) || "null"); } catch (e) {} if (f) { store.set(FLASH_KEY, ""); setTimeout(() => toast(f.icon, f.title), 300); } }
 
 // Who is logged in comes from the server (a secure login cookie), not from the address bar.
-let role = null, me = null, EV = 0, NEV = 3, papers = [], scores = {}, mine = {}, full = [], panel = {};
+let role = null, me = null, EV = 0, NEV = 3, papers = [], scores = {}, mine = {}, full = [], panel = {}, encoded = {}, encodedMine = {};
 
 /* ---------- logos: local file first, then mmsu.edu.ph, else hidden ---------- */
 document.querySelectorAll("img.tb-logo").forEach(img => {
@@ -608,6 +653,7 @@ function show(view){
   document.querySelectorAll(".view").forEach(v => v.hidden = v.id !== "view-" + view);
   if (view === "accounts") loadAccounts();
   if (view === "papers") { renderPapers(); loadDeleted(); }
+  if (view === "encode") openEncode();
 }
 document.querySelectorAll("nav.tabs button").forEach(b => b.addEventListener("click", () => show(b.dataset.view)));
 show("rank");
@@ -626,13 +672,13 @@ function setRole(r){
     buildSheet(); show("score");
   } else if (r === "admin") {
     $("userName").textContent = "Admin"; $("menuWho").textContent = "Logged in as admin";
-    $("tabs").hidden = false; $("tab-admin").hidden = false; $("tab-accounts").hidden = false; $("tab-papers").hidden = false;
+    $("tabs").hidden = false; $("tab-admin").hidden = false; $("tab-accounts").hidden = false; $("tab-papers").hidden = false; $("tab-encode").hidden = false;
     $("whoTag").hidden = false; $("whoTag").textContent = "Admin view";
   }
 }
 
 /* ---------- log in / log out ---------- */
-function openLogin(){ $("loginPanel").hidden = false; document.body.style.overflow = "hidden"; setTimeout(() => $("loginUser").focus(), 30); }
+function openLogin(){ $("loginPanel").hidden = false; document.body.style.overflow = "hidden"; if (!$("loginUser").value) $("loginUser").focus(); } // focus at once (a delayed focus could pull typing out of the password box)
 function closeLogin(){ $("loginPanel").hidden = true; document.body.style.overflow = ""; $("loginBtn").focus(); }
 $("loginBtn").addEventListener("click", openLogin);
 $("loginCancel").addEventListener("click", closeLogin);
@@ -677,6 +723,103 @@ $("pwBtn").addEventListener("click", async () => {
   if (r.isConfirmed) popup("success", "Password changed", "Use your new password next time you log in.");
 });
 
+/* ---------- encode remarks (admin): Evaluators 1, 2 and 3 for one presentation ---------- */
+// Each box saves on its own; saving again replaces it and an empty box removes it.
+const ENC_SHORT = {"1": "T1", "2a": "T2A", "2b": "T2B", "3": "T3", "4-5": "T45"};
+let encGroup = GROUP_KEYS.includes(store.get("isnc.encPanel")) ? store.get("isnc.encPanel") : GROUP_KEYS[0], encCode = "";
+const encDirty = {};   // n -> true while a box has unsaved typing
+const encId = (code, n) => `${code}_e${n}`;
+const encText = (code, n) => (encoded[encId(code, n)] || {}).text || "";
+function encCount(code){ return Array.from({length: NEV}, (_, i) => encText(code, i + 1)).filter(Boolean).length; }
+async function encLeaveOk(){
+  return !Object.values(encDirty).some(Boolean) || ask({title: "Leave without saving?", text: "A remark you typed is not saved yet. It will be lost.", confirm: "Leave", danger: true, icon: "warning"});
+}
+function openEncode(){
+  $("encPanels").innerHTML = GROUP_KEYS.map(g => `<button type="button" data-g="${esc(g)}" title="${esc(GROUPS[g].label)}" aria-pressed="${g === encGroup}">${esc(ENC_SHORT[g] || g)}</button>`).join("");
+  $("encPanels").querySelectorAll("button").forEach(b => b.addEventListener("click", async () => {
+    if (b.dataset.g === encGroup || !(await encLeaveOk())) return;
+    encGroup = b.dataset.g; store.set("isnc.encPanel", encGroup); encCode = "";
+    $("encPanels").querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x.dataset.g === encGroup));
+    fillEncPapers();
+  }));
+  fillEncPapers();
+}
+const encOption = p => { const n = encCount(p.code); return `${p.label} · ${p.title}${n ? ` (${n}/${NEV} encoded)` : ""}`; };
+function fillEncPapers(){
+  const list = inGroup(encGroup), sel = $("encPaper");
+  if (!list.some(p => p.code === encCode)) encCode = list.length ? list[0].code : "";
+  sel.innerHTML = list.map(p => `<option value="${esc(p.code)}">${esc(encOption(p))}</option>`).join("") || `<option value="">No presentations</option>`;
+  sel.value = encCode;
+  renderEncSlots();
+}
+function encStatus(n){
+  const box = document.querySelector(`.encslot[data-n="${n}"]`); if (!box) return;
+  const e = encoded[encId(encCode, n)];
+  box.classList.toggle("dirty", Boolean(encDirty[n]));
+  box.querySelector(".st").textContent = encDirty[n] ? "Not saved yet" : e ? `Saved · ${when(e.at)}` : "Nothing encoded yet";
+  box.querySelector(".count").textContent = `${$("enc-" + n).value.length} / 400`;
+}
+function renderEncSlots(){
+  const p = papers.find(x => x.code === encCode), list = inGroup(encGroup), i = list.findIndex(x => x.code === encCode);
+  $("encTitle").textContent = p ? `${p.label} · ${p.title}` : "Choose a presentation";
+  $("encMeta").textContent = p ? [p.no ? `#${p.no}` : "", p.session].filter(Boolean).join(" · ") : "";
+  $("encPos").textContent = list.length && i >= 0 ? `${i + 1} / ${list.length}` : "";
+  $("encPrev").disabled = i <= 0; $("encNext").disabled = i < 0 || i >= list.length - 1;
+  for (const k in encDirty) delete encDirty[k];
+  if (!p) { $("encSlots").innerHTML = ""; return; }
+  const names = panel[groupOf(p)] || {};
+  $("encSlots").innerHTML = Array.from({length: NEV}, (_, k) => {
+    const n = k + 1, own = full.find(s => s.code === p.code && s.ev === n);
+    return `<div class="encslot" data-n="${n}">
+      <h4>Evaluator ${n} <span class="def">${esc(names[n] || "no name yet")}</span></h4>
+      ${own && own.remarks ? `<div class="own" title="${esc(own.remarks)}">Their own remark: “${esc(own.remarks)}”</div>` : ""}
+      <label class="sr-only" for="enc-${n}">Remarks for Evaluator ${n}</label>
+      <textarea id="enc-${n}" maxlength="400" placeholder="Type Evaluator ${n}'s remarks…">${esc(encText(p.code, n))}</textarea>
+      <div class="foot"><span class="st"></span><span class="count">0 / 400</span><button class="btn small" type="button" data-encsave="${n}">Save</button></div>
+    </div>`;
+  }).join("");
+  for (let n = 1; n <= NEV; n++) {
+    encStatus(n);
+    $("enc-" + n).addEventListener("input", () => { encDirty[n] = true; encStatus(n); });
+  }
+  $("encSlots").querySelectorAll("[data-encsave]").forEach(b => b.addEventListener("click", () => saveEnc(Number(b.dataset.encsave))));
+}
+// Every 15 seconds (with the rest of the data): show what other facilitators saved, without touching a box being typed in.
+function refreshEncode(){
+  const sel = $("encPaper"), cur = sel.value, list = inGroup(encGroup);
+  [...sel.options].forEach(o => { const p = list.find(x => x.code === o.value); if (p) o.textContent = encOption(p); });
+  sel.value = cur;
+  for (let n = 1; n <= NEV; n++) {
+    const box = $("enc-" + n); if (!box || encDirty[n]) continue;
+    const t = encText(encCode, n); if (box.value !== t) box.value = t;
+    encStatus(n);
+  }
+}
+async function saveEnc(n){
+  const code = encCode, box = $("enc-" + n), btn = document.querySelector(`[data-encsave="${n}"]`);
+  btn.disabled = true;
+  try {
+    const d = await post("/api/admin", {action: "encoded-save", code, ev: n, text: box.value});
+    if (d.saved) encoded[encId(code, n)] = d.saved; else delete encoded[encId(code, n)];
+    if (code === encCode) { encDirty[n] = false; box.value = d.saved ? d.saved.text : ""; encStatus(n); }
+    toast("success", d.saved ? `Saved: ${L(code)} · Evaluator ${n}` : `Cleared: ${L(code)} · Evaluator ${n}`);
+    refreshEncode();
+  } catch (e) { popup("error", "Not saved", e.message); }
+  finally { btn.disabled = false; }
+}
+$("encPaper").addEventListener("change", async () => {
+  if (!(await encLeaveOk())) { $("encPaper").value = encCode; return; }
+  encCode = $("encPaper").value; renderEncSlots();
+});
+async function encMove(step){
+  const list = inGroup(encGroup), i = list.findIndex(x => x.code === encCode), p = list[i + step];
+  if (!p || !(await encLeaveOk())) return;
+  encCode = p.code; $("encPaper").value = encCode; renderEncSlots();
+}
+$("encPrev").addEventListener("click", () => encMove(-1));
+$("encNext").addEventListener("click", () => encMove(1));
+window.addEventListener("beforeunload", e => { if (role === "admin" && Object.values(encDirty).some(Boolean)) { e.preventDefault(); e.returnValue = ""; } });
+
 /* ---------- automatic logout after 30 minutes without activity (shared computers) ---------- */
 const IDLE_MS = 30 * 60 * 1000;
 let lastActive = Date.now();
@@ -691,7 +834,7 @@ setInterval(async () => {
 async function post(path, data){
   const r = await fetch(path, {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(data), credentials: "same-origin"});
   const d = await r.json().catch(() => ({}));
-  if (!r.ok) { const e = new Error(d.error || `The server had an error (${r.status}). Try again; if it keeps happening, check /api/health.`); e.status = r.status; throw e; }
+  if (!r.ok) { const e = new Error(d.error || `The server had an error (${r.status}). Try again; if it keeps happening, check /api/health.`); e.status = r.status; e.data = d; throw e; }
   return d;
 }
 
@@ -707,11 +850,12 @@ function applyData(d){
   const m = {}; (d.scores || []).forEach(s => m[`${s.code}_e${s.ev}`] = s); scores = m;
   if (d.mine) mine = d.mine;
   if (d.full) full = d.full;
+  encoded = d.encoded || encoded; encodedMine = d.encodedMine || encodedMine;
   $("connStatus").className = "status";
   $("connStatus").textContent = "Updated " + new Date(d.at || Date.now()).toLocaleTimeString();
   fillThemeSelects();
   if (role === "evaluator") { renderPaperSelect(); renderProgress(); renderMine(); paintMailButtons(); if (firstLoad) loadSheet(); }
-  if (role === "admin") { renderAdmin(); if (!$("view-papers").hidden) renderPapers(); }
+  if (role === "admin") { renderAdmin(); if (!$("view-papers").hidden) renderPapers(); if (!$("view-encode").hidden) refreshEncode(); }
   renderRanking();
   firstLoad = false;
 }
@@ -813,6 +957,9 @@ function loadSheet(){
   $("editTag").hidden = !ex;
   ALL.forEach(i => { $("c-" + i.k).value = ex && ex.scores && ex.scores[i.k] != null ? ex.scores[i.k] : ""; });
   $("remarks").value = ex ? (ex.remarks || "") : ""; countRemarks();
+  const en = code ? encodedMine[code] : null;  // remarks a facilitator encoded for this evaluator (read-only here)
+  $("encodedNote").hidden = !en;
+  if (en) $("encodedNote").innerHTML = `<span class="def">Remarks encoded by a facilitator (${esc(when(en.at))}). They are in your Excel file.</span>${esc(en.text)}`;
   recalc();
 }
 
@@ -1125,7 +1272,7 @@ async function accountAction(act, a){
 $("resetBtn").addEventListener("click", async () => {
   const ok = await ask({
     title: "Delete ALL scores?",
-    text: `Every evaluator's scores for all ${papers.length} presentations will be erased and the ranking will be empty. This cannot be undone.`,
+    text: `Every evaluator's scores for all ${papers.length} presentations, and every remark encoded by facilitators, will be erased and the ranking will be empty. This cannot be undone.`,
     icon: "warning", confirm: "Delete all scores", danger: true,
   });
   if (ok) await adminAction({action:"clear-scores"}, $("resetStatus"), "All scores deleted.");
