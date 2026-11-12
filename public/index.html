@@ -199,6 +199,8 @@ tr.r1 td{background:var(--rowtint)}
 .pcode{font-family:var(--mono);font-size:12px;color:var(--green-ink);margin-right:6px}
 .pauth{font-size:12.5px;color:var(--muted);margin-top:3px}
 .paff{font-size:12px;color:var(--muted);font-style:italic;margin-top:2px}
+.authors{text-transform:uppercase;letter-spacing:.01em}
+.authors u{text-decoration-thickness:1.5px;text-underline-offset:2px;color:var(--fg)}
 .pstat{margin-top:6px}
 .evs{display:flex;gap:4px;justify-content:flex-end}
 .ev{font-family:var(--mono);font-size:12px;padding:2px 6px;border-radius:4px;background:var(--bg);border:1px solid var(--line);min-width:48px;text-align:center}
@@ -571,6 +573,19 @@ const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt
 const fmt = n => n == null || !isFinite(n) ? "—" : (Math.round(n*100)/100).toFixed(2);
 const trim0 = s => s.replace(/\.00$/, "");
 const store = { get(k){try{return localStorage.getItem(k)}catch(e){return null}}, set(k,v){try{localStorage.setItem(k,v)}catch(e){}} };
+/** Authors in capitals; the principal author(s) underlined (the names in red in the theme document; none if not marked). */
+function authorsHtml(p){
+  const a = String((p && p.authors) || ""); if (!a) return "—";
+  const who = (Array.isArray(p.principal) ? p.principal : p.principal ? [p.principal] : []).filter(Boolean);
+  // mark each principal author's position, then build the text with <u> around them
+  const spans = [];
+  for (const n of who) { const i = a.indexOf(n); if (i >= 0 && !spans.some(([s, e]) => i < e && i + n.length > s)) spans.push([i, i + n.length]); }
+  spans.sort((x, y) => x[0] - y[0]);
+  let html = "", at = 0;
+  for (const [s, e] of spans) { html += esc(a.slice(at, s)) + "<u>" + esc(a.slice(s, e)) + "</u>"; at = e; }
+  html += esc(a.slice(at));
+  return `<span class="authors"${spans.length ? ' title="Underlined: principal author"' : ""}>${html}</span>`;
+}
 /** A presentation's affiliation ("" when not given). */
 const affilOf = p => (p && p.affiliation && p.affiliation !== "Not provided") ? p.affiliation : "";
 const themeTag = t => (t === "4" || t === "5") ? "Track 4" : `Theme ${t}`;  // Themes 4 and 5 are one panel: Track 4
@@ -957,8 +972,8 @@ function recalc(){
 function loadSheet(){
   const code = $("paperSel").value, paper = papers.find(p => p.code === code), ex = code ? mine[code] : null;
   $("sheetTitle").textContent = paper ? `${paper.label} · ${paper.title}` : "Score sheet";
-  $("sheetMeta").textContent = !paper ? "Choose a presentation to score." :
-    `${paper.no ? `Presentation #${paper.no}${paper.session ? " · " + paper.session : ""} · ` : ""}${themeName(paper.theme)} · ${paper.authors || "—"}${affilOf(paper) ? " · " + affilOf(paper) : ""}` + (ex ? ` · Saved ${when(ex.updatedAt)} with ${trim0(fmt(ex.total))} / 100. Change any box and press Save changes.` : " · Not yet scored by you.");
+  $("sheetMeta").innerHTML = !paper ? "Choose a presentation to score." :
+    esc(`${paper.no ? `Presentation #${paper.no}${paper.session ? " · " + paper.session : ""} · ` : ""}${themeName(paper.theme)} · `) + authorsHtml(paper) + esc(`${affilOf(paper) ? " · " + affilOf(paper) : ""}` + (ex ? ` · Saved ${when(ex.updatedAt)} with ${trim0(fmt(ex.total))} / 100. Change any box and press Save changes.` : " · Not yet scored by you."));
   $("editTag").hidden = !ex;
   ALL.forEach(i => { $("c-" + i.k).value = ex && ex.scores && ex.scores[i.k] != null ? ex.scores[i.k] : ""; });
   $("remarks").value = ex ? (ex.remarks || "") : ""; countRemarks();
@@ -1101,7 +1116,7 @@ function rankCard({badge, label, name, list, showTheme, group}){
       <td class="ccell hide-sm">${esc(r.p.label)}</td>
       ${showTheme ? `<td class="hide-md"><span class="ttag" title="${esc(themeName(r.p.theme))}">${esc(themeTag(r.p.theme))}</span></td>` : ""}
       <td class="pcell"><div class="pcode show-sm">${esc(r.p.label)}${showTheme ? ` · ${esc(themeTag(r.p.theme))}` : ""}</div><div class="ptitle">${esc(r.p.title)}</div>
-        <div class="pauth">${esc(r.p.authors)}${showTheme ? `<span class="show-md">${esc(themeTag(r.p.theme))}</span>` : ""}</div>${affilOf(r.p) ? `<div class="paff">${esc(affilOf(r.p))}</div>` : ""}
+        <div class="pauth">${authorsHtml(r.p)}${showTheme ? `<span class="show-md">${esc(themeTag(r.p.theme))}</span>` : ""}</div>${affilOf(r.p) ? `<div class="paff">${esc(affilOf(r.p))}</div>` : ""}
         <div class="evline show-sm">${r.ev.map((s, i) => `E${i + 1} ${s ? trim0(fmt(s.total)) : "–"}`).join(" · ")}</div>
         <div class="pstat">${panelTag(r.p) ? `<span class="ttag">${panelTag(r.p)}</span> ` : ""}<span class="pill ${r.n === NEV ? "done" : r.n ? "part" : "none"}">${r.n === NEV ? "Complete" : r.n + " of " + NEV + " scored"}</span></div></td>
       ${r.ev.map((s, i) => `<td class="evc hide-sm"><span class="ev ${s ? "" : "miss"}" title="Evaluator ${i + 1}">${s ? trim0(fmt(s.total)) : "–"}</span></td>`).join("")}
@@ -1167,7 +1182,7 @@ function renderPapers(){
     const panel = p.theme === "2"
       ? `<select data-move="${esc(p.code)}" aria-label="Group for ${esc(p.label)}"><option value="2a" ${g === "2a" ? "selected" : ""}>Track 2A</option><option value="2b" ${g === "2b" ? "selected" : ""}>Track 2B</option></select>`
       : `${esc(GROUPS[g] ? GROUPS[g].label : g)}`;
-    return `<tr><td class="ccell">${esc(p.label)}</td><td><div class="ptitle">${p.no ? `<span class="pcode">#${p.no}</span> ` : ""}${esc(p.title)}</div><div class="pauth">${esc(p.authors)}</div>${affilOf(p) ? `<div class="paff">${esc(affilOf(p))}</div>` : ""}${p.session ? `<div class="def">${esc(p.session)}</div>` : ""}</td>
+    return `<tr><td class="ccell">${esc(p.label)}</td><td><div class="ptitle">${p.no ? `<span class="pcode">#${p.no}</span> ` : ""}${esc(p.title)}</div><div class="pauth">${authorsHtml(p)}</div>${affilOf(p) ? `<div class="paff">${esc(affilOf(p))}</div>` : ""}${p.session ? `<div class="def">${esc(p.session)}</div>` : ""}</td>
       <td>${panel}</td><td class="num hide-sm">${n}/${NEV}</td>
       <td><button class="btn danger small" type="button" data-del-paper="${esc(p.code)}">Delete</button></td></tr>`;
   }).join("") : `<tr><td colspan="5" class="muted">No presentations match.</td></tr>`;
