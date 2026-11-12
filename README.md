@@ -8,13 +8,13 @@ Online score sheet and live ranking for the oral presentations of the 2026 Inter
 
 ## Panels and accounts (15, one per panel seat)
 
-| Panel | Presentations | Evaluator Accounts | 
-|---|---|---|
-| Theme 1 | T1-01 – T1-15 | `t1-e1`, `t1-e2`, `t1-e3` | 
-| Theme 2 · Track 2A | T2-01 – T2-09 (Day 2) and T2-18 – T2-26 (Day 3) | `t2-e1`, `t2-e2`, `t2-e3` | 
-| Theme 2 · Track 2B | T2-10 – T2-17 (Day 2) and T2-27 – T2-34 (Day 3) | `t2b-e1`, `t2b-e2`, `t2b-e3` | 
-| Theme 3 | T3-01 – T3-10 | `t3-e1`, `t3-e2`, `t3-e3` |
-| Track 4 (Themes 4 & 5) | T4-01 – T4-07 | `t45-e1`, `t45-e2`, `t45-e3` | 
+| Panel | Presentations | Accounts | Evaluators |
+|---|---|---|---|
+| Theme 1 | T1-01 – T1-15 | `t1-e1`, `t1-e2`, `t1-e3` | Anas, Rosales, Antonio |
+| Theme 2 · Track 2A | T2-01 – T2-09 (Day 2) and T2-18 – T2-26 (Day 3) | `t2-e1`, `t2-e2`, `t2-e3` | Ancheta, Lagura, Daguio (no email) |
+| Theme 2 · Track 2B | T2-10 – T2-17 (Day 2) and T2-27 – T2-34 (Day 3) | `t2b-e1`, `t2b-e2`, `t2b-e3` | Franco, Rahon, Lim |
+| Theme 3 | T3-01 – T3-10 | `t3-e1`, `t3-e2`, `t3-e3` | Valentin, Mateo, Ubiña |
+| Track 4 (Themes 4 & 5) | T4-01 – T4-07 | `t45-e1`, `t45-e2`, `t45-e3` | Valentin, Simon, Jimenez |
 
 - Passwords: Admin → **Accounts** tab (shown there, with **Copy list**). Capital letters and spaces don't matter when typing them.
 - Names and emails come from `lib/accounts.js` when the accounts are created; change them in Accounts → **Edit**.
@@ -44,7 +44,7 @@ Online score sheet and live ranking for the oral presentations of the 2026 Inter
 | `api/export.js` | Excel file: **Download Excel file** and **Send to email** |
 | `api/health.js` | Setup check: `https://YOUR-SITE/api/health` (every file should say `ok`) |
 | `lib/criteria.js` | Criteria maximums the server checks (must match the page) |
-| `lib/papers.js` | The 66 presentations (codes, #, times and titles from the program; authors from the abstracts) |
+| `lib/papers.js` | The 66 presentations (codes, #, times and titles from the program; authors and affiliations from the abstracts) |
 | `lib/catalog.js` | Panels; adding, deleting and restoring presentations; Track 2A/2B; the codes people see |
 | `lib/accounts.js` | The 15 accounts, their passwords, login sessions |
 | `lib/encoded.js` | Remarks facilitators encode for evaluators |
@@ -72,7 +72,7 @@ Plus the Upstash database variables Vercel added. After any change: **Deployment
 To test without sending emails, remove `SMTP_PASS` and redeploy; put it back (and redeploy) before the event.
 
 ## Presentations (admin **Presentations** tab)
-- **Add a presentation:** theme (and Track 2A/2B for Theme 2), presentation #, session, title, authors. Its code follows its # (Theme 2 #35 shows as T2-35); without a #, it goes last in its theme.
+- **Add a presentation:** theme (and Track 2A/2B for Theme 2), presentation #, session, title, authors, affiliation. Its code follows its # (Theme 2 #35 shows as T2-35); without a #, it goes last in its theme.
 - **Delete** a presentation (only if it has no scores yet; delete its scores first in the Admin tab), and **Restore** it from "Deleted presentations".
 - **Move** a Theme 2 presentation between Track 2A and 2B. Choices are saved in `isnc2026:paper-groups-v3`; older choices are ignored.
 - These changes are kept in the database; `lib/papers.js` doesn't need editing. Don't change a code in `lib/papers.js` once scoring has started.
@@ -88,7 +88,7 @@ For typing the remarks an evaluator gave (for example, comments written on paper
 - Remarks encoded after an evaluator's automatic email are not in that email; the evaluator can press **Send to email** or **Download Excel file** for an updated copy.
 
 ## Excel files
-- **Evaluators** (My scores tab): **Download Excel file**, and **Send to email** if their email is saved. The file (`isnc2026_eval_form.xlsx`) has their panel's ranking with all three evaluators' totals, averages, ranks, remarks and encoded remarks, and a sheet with their own score for every criterion.
+- **Evaluators** (My scores tab): **Download Excel file**, and **Send to email** if their email is saved. The file (`isnc2026_eval_form.xlsx`) has their panel's ranking (with each presentation's authors and affiliation) and all three evaluators' totals, averages, ranks, remarks and encoded remarks, and a sheet with their own score for every criterion.
 - **Automatic:** when an evaluator saves the last presentation of their panel, their file is emailed to them once. Later edits don't re-send; they can press **Send to email**.
 - **Admin** (Admin tab): **Download Excel file** (`isnc2026_eval_form_all.xlsx`) with every presentation, rank in theme and overall rank, all remarks (Evaluator 1, 2, 3), encoded remarks and every score sheet.
 
