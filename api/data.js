@@ -15,7 +15,7 @@ export default async function handler(req, res) {
     // so many ranking screens don't use up the database's request allowance. Evaluators and the admin get fresh scores.
     const user = await currentUser(req);
     const [all, list] = await Promise.all([user ? allScores() : allScoresCached(5000), getPapers(user && user.role === 'admin' ? 0 : 20000)]);
-    const papers = list.map(p => ({ code: p.code, label: p.label, group: p.group, theme: p.theme, no: p.no, session: p.session, title: p.title, authors: p.authors, order: p.order }));
+    const papers = list.map(p => ({ code: p.code, label: p.label, group: p.group, theme: p.theme, no: p.no, session: p.session, title: p.title, authors: p.authors, affiliation: p.affiliation || '', order: p.order }));
     const scores = all.map(s => ({ code: s.code, ev: s.ev, s1: s.s1, s2: s.s2, s3: s.s3, total: s.total }));
     const out = { role: user ? user.role : 'viewer', evaluators: EVALUATORS, papers, scores, at: Date.now() };
     if (user && user.role === 'evaluator') {
