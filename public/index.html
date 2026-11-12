@@ -198,6 +198,7 @@ tr.r1 td{background:var(--rowtint)}
 .ptitle{font-weight:600;line-height:1.35}
 .pcode{font-family:var(--mono);font-size:12px;color:var(--green-ink);margin-right:6px}
 .pauth{font-size:12.5px;color:var(--muted);margin-top:3px}
+.paff{font-size:12px;color:var(--muted);font-style:italic;margin-top:2px}
 .pstat{margin-top:6px}
 .evs{display:flex;gap:4px;justify-content:flex-end}
 .ev{font-family:var(--mono);font-size:12px;padding:2px 6px;border-radius:4px;background:var(--bg);border:1px solid var(--line);min-width:48px;text-align:center}
@@ -450,6 +451,7 @@ textarea#remarks:focus-visible{outline:3px solid var(--focus);outline-offset:2px
     <div class="row">
       <div class="field" style="flex:3 1 300px"><label for="npTitle">Title</label><input type="text" id="npTitle" maxlength="400"></div>
       <div class="field" style="flex:2 1 220px"><label for="npAuthors">Authors</label><input type="text" id="npAuthors" maxlength="600"></div>
+      <div class="field" style="flex:2 1 220px"><label for="npAffil">Affiliation</label><input type="text" id="npAffil" maxlength="600"></div>
       <button class="btn" id="npAdd" type="button" style="flex:none">Add presentation</button>
     </div>
   </div>
@@ -569,6 +571,8 @@ const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt
 const fmt = n => n == null || !isFinite(n) ? "—" : (Math.round(n*100)/100).toFixed(2);
 const trim0 = s => s.replace(/\.00$/, "");
 const store = { get(k){try{return localStorage.getItem(k)}catch(e){return null}}, set(k,v){try{localStorage.setItem(k,v)}catch(e){}} };
+/** A presentation's affiliation ("" when not given). */
+const affilOf = p => (p && p.affiliation && p.affiliation !== "Not provided") ? p.affiliation : "";
 const themeTag = t => (t === "4" || t === "5") ? "Track 4" : `Theme ${t}`;  // Themes 4 and 5 are one panel: Track 4
 const themeName = t => (t === "4" || t === "5") ? `Track 4: Policy and Governance for Carbon Neutrality / Smart Technologies and Decarbonization` : THEMES[t] ? `Theme ${t}: ${THEMES[t]}` : (t ? `Theme ${t}` : "No theme");
 // Ranking groups = panels. Theme 2 is split into Track 2A and Track 2B; Themes 4 and 5 are one panel, Track 4.
@@ -763,7 +767,7 @@ function encStatus(n){
 function renderEncSlots(){
   const p = papers.find(x => x.code === encCode), list = inGroup(encGroup), i = list.findIndex(x => x.code === encCode);
   $("encTitle").textContent = p ? `${p.label} · ${p.title}` : "Choose a presentation";
-  $("encMeta").textContent = p ? [p.no ? `#${p.no}` : "", p.session].filter(Boolean).join(" · ") : "";
+  $("encMeta").textContent = p ? [p.no ? `#${p.no}` : "", p.session, affilOf(p)].filter(Boolean).join(" · ") : "";
   $("encPos").textContent = list.length && i >= 0 ? `${i + 1} / ${list.length}` : "";
   $("encPrev").disabled = i <= 0; $("encNext").disabled = i < 0 || i >= list.length - 1;
   for (const k in encDirty) delete encDirty[k];
@@ -954,7 +958,7 @@ function loadSheet(){
   const code = $("paperSel").value, paper = papers.find(p => p.code === code), ex = code ? mine[code] : null;
   $("sheetTitle").textContent = paper ? `${paper.label} · ${paper.title}` : "Score sheet";
   $("sheetMeta").textContent = !paper ? "Choose a presentation to score." :
-    `${paper.no ? `Presentation #${paper.no}${paper.session ? " · " + paper.session : ""} · ` : ""}${themeName(paper.theme)} · ${paper.authors || "—"}` + (ex ? ` · Saved ${when(ex.updatedAt)} with ${trim0(fmt(ex.total))} / 100. Change any box and press Save changes.` : " · Not yet scored by you.");
+    `${paper.no ? `Presentation #${paper.no}${paper.session ? " · " + paper.session : ""} · ` : ""}${themeName(paper.theme)} · ${paper.authors || "—"}${affilOf(paper) ? " · " + affilOf(paper) : ""}` + (ex ? ` · Saved ${when(ex.updatedAt)} with ${trim0(fmt(ex.total))} / 100. Change any box and press Save changes.` : " · Not yet scored by you.");
   $("editTag").hidden = !ex;
   ALL.forEach(i => { $("c-" + i.k).value = ex && ex.scores && ex.scores[i.k] != null ? ex.scores[i.k] : ""; });
   $("remarks").value = ex ? (ex.remarks || "") : ""; countRemarks();
@@ -1097,7 +1101,7 @@ function rankCard({badge, label, name, list, showTheme, group}){
       <td class="ccell hide-sm">${esc(r.p.label)}</td>
       ${showTheme ? `<td class="hide-md"><span class="ttag" title="${esc(themeName(r.p.theme))}">${esc(themeTag(r.p.theme))}</span></td>` : ""}
       <td class="pcell"><div class="pcode show-sm">${esc(r.p.label)}${showTheme ? ` · ${esc(themeTag(r.p.theme))}` : ""}</div><div class="ptitle">${esc(r.p.title)}</div>
-        <div class="pauth">${esc(r.p.authors)}${showTheme ? `<span class="show-md">${esc(themeTag(r.p.theme))}</span>` : ""}</div>
+        <div class="pauth">${esc(r.p.authors)}${showTheme ? `<span class="show-md">${esc(themeTag(r.p.theme))}</span>` : ""}</div>${affilOf(r.p) ? `<div class="paff">${esc(affilOf(r.p))}</div>` : ""}
         <div class="evline show-sm">${r.ev.map((s, i) => `E${i + 1} ${s ? trim0(fmt(s.total)) : "–"}`).join(" · ")}</div>
         <div class="pstat">${panelTag(r.p) ? `<span class="ttag">${panelTag(r.p)}</span> ` : ""}<span class="pill ${r.n === NEV ? "done" : r.n ? "part" : "none"}">${r.n === NEV ? "Complete" : r.n + " of " + NEV + " scored"}</span></div></td>
       ${r.ev.map((s, i) => `<td class="evc hide-sm"><span class="ev ${s ? "" : "miss"}" title="Evaluator ${i + 1}">${s ? trim0(fmt(s.total)) : "–"}</span></td>`).join("")}
@@ -1110,7 +1114,7 @@ $("rankSearch").addEventListener("input", () => renderRanking());
 
 /* ---------- search by title or author: every typed word must appear (accents and capitals don't matter) ---------- */
 const plain = t => String(t || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
-const matches = (p, q) => { const hay = plain(`${p.title} ${p.authors} ${p.label} ${p.code}`); return plain(q).split(/\s+/).filter(Boolean).every(w => hay.includes(w)); };
+const matches = (p, q) => { const hay = plain(`${p.title} ${p.authors} ${affilOf(p)} ${p.label} ${p.code}`); return plain(q).split(/\s+/).filter(Boolean).every(w => hay.includes(w)); };
 function renderSearch(){
   const q = $("paperSearch").value, box = $("searchResults");
   if (!q.trim()) { box.hidden = true; box.innerHTML = ""; return; }
@@ -1163,7 +1167,7 @@ function renderPapers(){
     const panel = p.theme === "2"
       ? `<select data-move="${esc(p.code)}" aria-label="Group for ${esc(p.label)}"><option value="2a" ${g === "2a" ? "selected" : ""}>Track 2A</option><option value="2b" ${g === "2b" ? "selected" : ""}>Track 2B</option></select>`
       : `${esc(GROUPS[g] ? GROUPS[g].label : g)}`;
-    return `<tr><td class="ccell">${esc(p.label)}</td><td><div class="ptitle">${p.no ? `<span class="pcode">#${p.no}</span> ` : ""}${esc(p.title)}</div><div class="pauth">${esc(p.authors)}</div>${p.session ? `<div class="def">${esc(p.session)}</div>` : ""}</td>
+    return `<tr><td class="ccell">${esc(p.label)}</td><td><div class="ptitle">${p.no ? `<span class="pcode">#${p.no}</span> ` : ""}${esc(p.title)}</div><div class="pauth">${esc(p.authors)}</div>${affilOf(p) ? `<div class="paff">${esc(affilOf(p))}</div>` : ""}${p.session ? `<div class="def">${esc(p.session)}</div>` : ""}</td>
       <td>${panel}</td><td class="num hide-sm">${n}/${NEV}</td>
       <td><button class="btn danger small" type="button" data-del-paper="${esc(p.code)}">Delete</button></td></tr>`;
   }).join("") : `<tr><td colspan="5" class="muted">No presentations match.</td></tr>`;
@@ -1201,8 +1205,8 @@ $("npAdd").addEventListener("click", async () => {
   const theme = $("npTheme").value, title = $("npTitle").value.trim();
   if (!title) return popup("warning", "Enter the title", "Type the presentation's title first.");
   try {
-    const d = await post("/api/admin", {action: "add-paper", theme, group: theme === "2" ? $("npGroup").value : "", no: $("npNo").value, session: $("npSession").value, title, authors: $("npAuthors").value});
-    ["npTitle", "npAuthors", "npNo"].forEach(id => $(id).value = "");
+    const d = await post("/api/admin", {action: "add-paper", theme, group: theme === "2" ? $("npGroup").value : "", no: $("npNo").value, session: $("npSession").value, title, authors: $("npAuthors").value, affiliation: $("npAffil").value});
+    ["npTitle", "npAuthors", "npAffil", "npNo"].forEach(id => $(id).value = "");
     await load(); renderPapers();
     popup("success", `Added as ${L(d.paper.code)}`, `${d.paper.title}, in ${GROUPS[papers.find(p => p.code === d.paper.code).group].label}.`);
   } catch (e) { popup("error", "Not added", e.message); }
