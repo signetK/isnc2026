@@ -6,6 +6,20 @@ Online score sheet and live ranking for the oral presentations of the 2026 Inter
 - **Evaluators** (15 accounts, 3 per panel) log in with a username such as `t2b-e1` and a 4-character password, score only their own panel's presentations, and edit scores under **My scores**.
 - **Admin** logs in with username `admin` and the `ADMIN_KEY` password: sees every score and remark, manages accounts and presentations, encodes evaluators' remarks, and downloads the Excel file.
 
+## Screenshots
+(Sample data from a test copy; no real scores.)
+
+| | |
+|---|---|
+| **Ranking** (viewers, no login) ![Ranking](docs/screenshots/01-ranking.png) | **Log in** pop-up ![Log in](docs/screenshots/02-login.png) |
+| **Score presentations** (evaluator) ![Score sheet](docs/screenshots/03-score-sheet.png) | **My scores** (evaluator) ![My scores](docs/screenshots/04-my-scores.png) |
+| **Admin**: all submitted scores ![Admin](docs/screenshots/05-admin-scores.png) | **Presentations** (admin) ![Presentations](docs/screenshots/06-presentations.png) |
+| **Encode remarks** (admin) ![Encode remarks](docs/screenshots/07-encode-remarks.png) | **Dark mode** ![Dark mode](docs/screenshots/09-dark-mode.png) |
+
+**On a phone:**
+
+<img src="docs/screenshots/08-phone.png" alt="Phone" width="300">
+
 ## Panels and accounts (15, one per panel seat)
 
 | Panel | Presentations | Accounts | Evaluators |
@@ -26,6 +40,7 @@ Online score sheet and live ranking for the oral presentations of the 2026 Inter
 - **Theme 2 has two panels** (Track 2A and Track 2B) but **one ranking**: the track only decides who scores a presentation. The ranking's **Show** list is Overall, Theme 1, Theme 2, Theme 3, Track 4.
 - **Themes 4 and 5 are one panel, shown as Track 4** (codes T4-01 – T4-07). The accounts stay `t45-e1` – `t45-e3`, and the codes scores are saved under stay T45-01 – T45-07 (in `lib/papers.js`).
 - **Only the admin** adds, deletes, restores and moves presentations, and encodes remarks.
+- **Authors are shown in capitals, with the principal author underlined.** The principal authors are the names in red in `ISNC2026_Theme1-5.docx` (the `principal` list in `lib/papers.js`); presentations with no red have none underlined. The Excel files show the authors in capitals plus a **Principal author(s)** column.
 - **No lock after wrong passwords:** an evaluator can always try again.
 - The ranking note says only "Updates every 15 seconds."
 
@@ -56,6 +71,7 @@ Online score sheet and live ranking for the oral presentations of the 2026 Inter
 | `lib/http.js` | Small shared helpers |
 | `package.json`, `package-lock.json` | Tell Vercel to install Nodemailer (for email) |
 | `vercel.json` | Vercel settings (the site is in `public/`) |
+| `docs/screenshots/` | The pictures in this README (not part of the website) |
 
 **Upload new or changed files together.** If a file another file needs is missing (for example `lib/encoded.js`), the site stops loading. After each deploy, open `/api/health`.
 
